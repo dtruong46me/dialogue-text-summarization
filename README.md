@@ -11,7 +11,7 @@ This project tackles the task of automatically generating concise summaries, sav
 
 ![](assets/image2.png)
 
-<p style="text-align: center;"><i>Source: Google Research</i></p>
+<p align="center"><i>Source: Google Research</i></p>
 
 **Input:** Dialogue text
 
