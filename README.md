@@ -9,6 +9,10 @@ Summarizing these conversations can be valuable for various applications, such a
 
 This project tackles the task of automatically generating concise summaries, saving users time and effort while improving comprehension.
 
+![](assets/image2.png)
+
+<p style="text-align: center;"><i>Source: Google Research</i></p>
+
 **Input:** Dialogue text
 
 Example: 
@@ -30,7 +34,7 @@ Matt invites Agnes for a date to get to know each other better. They'll go to th
 
 # Dataset
 
-We'll utilize the `DialogSum` dataset accessible from Hugging Face *(https://huggingface.co/datasets/knkarthick/dialogsum)* and the paper *(https://arxiv.org/pdf/2105.06762.pdf)*. This dataset comprises real-life dialogue scenarios paired with corresponding manually crafted summaries and dialogue topics.
+We'll utilize the `DialogSum` dataset accessible from 🤗**Hugging Face** (https://huggingface.co/datasets/knkarthick/dialogsum) and **Paper** (https://arxiv.org/pdf/2105.06762.pdf). This dataset comprises real-life dialogue scenarios paired with corresponding manually crafted summaries and dialogue topics.
 
 Here's a sample of the `DialogSum` dataset structure:
 
