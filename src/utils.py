@@ -1,10 +1,17 @@
 import argparse
 
 import os
+import sys
 import yaml
 
 from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments
-from evaluate.evaluation import *
+
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, path)
+print(path)
+
+from src.evaluate.evaluation import compute_metrics
+print("Loaded metrics")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine tuning LLM for Dialogue Text Summarization")
