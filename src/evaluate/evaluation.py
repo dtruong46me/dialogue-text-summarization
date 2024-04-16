@@ -3,13 +3,24 @@ import nltk
 import numpy as np
 from nltk.tokenize import sent_tokenize
 
+import os
+import sys
+
 nltk.download("punkt")
-import src.model.bart
+
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, path)
+
+from model.model import GeneralModel
 import src.model.flant5
 
 # Metric
 metric = evaluate.load("rouge")
 
+# Tokenizer
+checkpoint = "google/flan-t5-base"
+model = GeneralModel(checkpoint)
+tokenizer = model.tokenizer
 
 def postprocess_text(preds, labels):
     preds = [pred.strip() for pred in preds]
@@ -22,7 +33,7 @@ def postprocess_text(preds, labels):
     return preds, labels
 
 
-def compute_metrics(eval_preds, tokenizer):
+def compute_metrics(eval_preds):
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]

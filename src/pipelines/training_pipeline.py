@@ -9,9 +9,10 @@ sys.path.insert(0, path)
 
 from utils import *
 
-from model.flant5 import load_model
+from model.load_model import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
+from evaluate.evaluation import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ def training_pipeline(args: argparse.Namespace):
         logger.info("Complete loading training arguments!")
 
         # Load trainer
-        trainer = load_trainer(model=model.t5models,
+        trainer = load_trainer(model=model.base_model,
                                training_args=training_args,
                                dataset=data,
                                tokenizer=model.tokenizer)
@@ -50,6 +51,6 @@ def training_pipeline(args: argparse.Namespace):
         logger.info("Complete pushing model to hub!")
 
     except Exception as e:
-        logger.error("Error while training: {e}")
+        logger.error(f"Error while training: {e}")
         raise e
     

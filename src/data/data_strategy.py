@@ -41,7 +41,10 @@ class DataTokenizingStrategy(DataStrategy):
             
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+            logger.info(f"Tokenizing dataset!")
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
+
+            logger.info(f"Removing unnecessary columns!")
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
 
             # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
@@ -49,7 +52,7 @@ class DataTokenizingStrategy(DataStrategy):
             return tokenized_dataset
 
         except Exception as e:
-            logger.info("Error while tokenizing data: {e}")
+            logger.info(f"Error while tokenizing data: {e}")
             raise e
         
     def preprocess_function(self, data: Dataset, *args) -> Dataset:
