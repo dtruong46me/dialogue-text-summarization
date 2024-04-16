@@ -9,7 +9,7 @@ sys.path.insert(0, path)
 
 from utils import *
 
-from model.load_model import load_model
+from model.models import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
 from evaluate.evaluation import *
