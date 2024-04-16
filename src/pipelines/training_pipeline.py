@@ -12,7 +12,6 @@ from utils import *
 from model.models import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
-from evaluate.evaluation import *
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
