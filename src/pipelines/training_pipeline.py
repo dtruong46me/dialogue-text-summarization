@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def training_pipeline(args: argparse.Namespace):
     try:
         # Load model from checkpoint
-        model = load_model(argparse.checkpoint)
+        model = load_model(args.checkpoint)
         logger.info("Complete loading model!")
 
         # Load data from datapath
