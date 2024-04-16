@@ -11,8 +11,7 @@ nltk.download("punkt")
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
-from model.model import GeneralModel
-import src.model.flant5
+from model.models import GeneralModel
 
 # Metric
 metric = evaluate.load("rouge")
