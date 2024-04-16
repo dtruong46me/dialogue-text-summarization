@@ -26,3 +26,15 @@ class GeneralModel:
         except Exception as e:
             logger.error(f"Error while generating: {e}")
             raise e
+
+
+# FLAN-T5 MODEL
+class FlanT5Model(GeneralModel):
+    def __init__(self, checkpoint):
+        super().__init__(checkpoint)
+
+
+# BART MODEL
+class BartModel(GeneralModel):
+    def __init__(self, checkpoint):
+        super().__init__(checkpoint)  
