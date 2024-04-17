@@ -45,8 +45,6 @@ def training_pipeline(args: argparse.Namespace):
         trainer.train()
         logger.info("Complete training!")
 
-        train_metrics = trainer.evaluate()
-
         # Push to Huggingface Hub
         trainer.push_to_hub()
         logger.info("Complete pushing model to hub!")

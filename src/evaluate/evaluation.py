@@ -1,66 +1,15 @@
-import evaluate
-import nltk
-import numpy as np
-from nltk.tokenize import sent_tokenize
+import logging
 
 import os
 import sys
 
-nltk.download("punkt")
-
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
-from model.models import GeneralModel
+from model.models import load_model
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Tokenizer
-checkpoint = "google/flan-t5-base"
-model = GeneralModel(checkpoint)
-tokenizer = model.tokenizer
-
-def postprocess_text(preds, labels):
-    preds = [pred.strip() for pred in preds]
-    labels = [label.strip() for label in labels]
-
-    # rougeLSum expects newline after each sentence
-    preds = ["\n".join(sent_tokenize(pred)) for pred in preds]
-    labels = ["\n".join(sent_tokenize(label)) for label in labels]
-
-    return preds, labels
-
-
-def compute_metrics(eval_preds):
-    preds, labels = eval_preds
-    if isinstance(preds, tuple):
-        preds = preds[0]
-
-    print(eval_preds)
-    print(type(preds))
-    print(preds)
-    print(type(labels))
-    print(labels)
-    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
-    # Replace -100 in the labels as we can't decode them.
-    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    # Some simple post-processing
-    decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-
-    metric = evaluate.load("rouge")
-    rouge_results = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
-    rouge_results = {k: round(v * 100, 4) for k, v in rouge_results.items()}
-    
-    # Calculate eval_loss if available
-    eval_loss = np.mean([example.loss for example in eval_preds])
-
-    result = {
-        "eval_loss": eval_loss,
-        "rouge1": rouge_results["rouge1"],
-        "rouge2": rouge_results["rouge2"],
-        "rougeL": rouge_results["rougeL"],
-        "gen_len": np.mean([np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds])
-    }
-
-    return result
+if __name__=='__main__':
+    pass

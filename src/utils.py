@@ -6,12 +6,10 @@ import yaml
 
 from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments
 
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, path)
-print(path)
+# path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# sys.path.insert(0, path)
 
-from src.evaluate.evaluation import compute_metrics
-print("Loaded metrics")
+# from src.evaluate.evaluation import compute_metrics
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine tuning LLM for Dialogue Text Summarization")
@@ -87,7 +85,7 @@ def load_trainer(model, training_args, dataset, tokenizer):
         train_dataset=dataset["train"],
         eval_dataset=dataset["validation"],
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics
+        # compute_metrics=compute_metrics
     )
     return trainer
 
