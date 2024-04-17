@@ -46,11 +46,6 @@ def training_pipeline(args: argparse.Namespace):
         logger.info("Complete training!")
 
         train_metrics = trainer.evaluate()
-        print(f"Train loss: {train_metrics["train_loss"]}")
-        print(f"Eval loss: {train_metrics["eval_loss"]}")
-        print(f"Rouge1: {train_metrics["rouge1"]}")
-        print(f"Rouge2: {train_metrics["rouge2"]}")
-        print(f"RougeL: {train_metrics["rougeL"]}")
 
         # Push to Huggingface Hub
         trainer.push_to_hub()
