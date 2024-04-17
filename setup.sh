@@ -1,11 +1,10 @@
-
-
 echo "Xin chao anh em!"
-echo "Chung toi dang setup moi truong, vui long ko phai cho"
+echo "Chung toi dang setup moi truong ..."
 echo "..."
-pip install --upgrade pip
-pip install -U datasets
-pip install -r "/kaggle/working/dialogue-text-summarization/requirements.txt"
-pip install -r "/content/dialogue-text-summarization/requirements.txt"
+pip install -q --upgrade pip
+pip install -q -U datasets
+pip install -q -r "/kaggle/working/dialogue-text-summarization/requirements.txt"
+pip install -q -r "/content/dialogue-text-summarization/requirements.txt"
+pip install -q -r "requirements.txt"
 echo "---------"
 echo "Set up complete!"

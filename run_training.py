@@ -38,6 +38,9 @@ if __name__=='__main__':
 
     # Login to Huggingface Hub and WandB
     login(token=huggingface_hub_token)
+    logger.info("Successful login to Huggingface Hub")
     wandb.login(key=wandb_token)
+    logger.info("Successful login to WandB")
 
     training_pipeline(args)
+    logger.info("Finish training pipeline")
