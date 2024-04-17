@@ -13,8 +13,6 @@ sys.path.insert(0, path)
 
 from model.models import GeneralModel
 
-# Metric
-metric = evaluate.load("rouge")
 
 # Tokenizer
 checkpoint = "google/flan-t5-base"
@@ -36,6 +34,12 @@ def compute_metrics(eval_preds):
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]
+
+    print(eval_preds)
+    print(type(preds))
+    print(preds)
+    print(type(labels))
+    print(labels)
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
     # Replace -100 in the labels as we can't decode them.
     labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
@@ -44,8 +48,19 @@ def compute_metrics(eval_preds):
     # Some simple post-processing
     decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
 
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
-    result = {k: round(v * 100, 4) for k, v in result.items()}
-    prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
-    result["gen_len"] = np.mean(prediction_lens)
+    metric = evaluate.load("rouge")
+    rouge_results = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+    rouge_results = {k: round(v * 100, 4) for k, v in rouge_results.items()}
+    
+    # Calculate eval_loss if available
+    eval_loss = np.mean([example.loss for example in eval_preds])
+
+    result = {
+        "eval_loss": eval_loss,
+        "rouge1": rouge_results["rouge1"],
+        "rouge2": rouge_results["rouge2"],
+        "rougeL": rouge_results["rougeL"],
+        "gen_len": np.mean([np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds])
+    }
+
     return result
