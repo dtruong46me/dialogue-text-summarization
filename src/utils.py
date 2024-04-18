@@ -41,6 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--report_to", type=str, default="wandb")
     parser.add_argument("--run_name", type=str, default="flan-t5-base-model")
     parser.add_argument("--early_stopping_patience", type=int, default=2)
+    parser.add_argument("--early_stopping_threshold", type=float, default=0.0)
     parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
     parser.add_argument("--load_best_model_at_end", type=bool, default=True)
     args = parser.parse_args()
@@ -85,7 +86,8 @@ def load_callbacks(args) -> list:
     try:
         callbacks = []
         early_stopping_callback = EarlyStoppingCallback(
-            early_stopping_patience=args.early_stopping_patience
+            early_stopping_patience=args.early_stopping_patience,
+            early_stopping_threshold=args.early_stopping_threshold
         )
         callbacks.append(early_stopping_callback)
         return callbacks

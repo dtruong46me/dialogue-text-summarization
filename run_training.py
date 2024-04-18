@@ -1,6 +1,9 @@
 import wandb
 from huggingface_hub import login
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import logging
 
 import os
