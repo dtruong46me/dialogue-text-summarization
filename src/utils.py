@@ -47,10 +47,9 @@ def parse_args() -> argparse.Namespace:
 
 def load_training_arguments(args):
     try:
-        callbacks = load_callbacks(args)
         if args.configpath is not None:
             config = load_config(configpath=args.configpath)
-            training_args = Seq2SeqTrainingArguments(**config["training_args"], callbacks=callbacks)
+            training_args = Seq2SeqTrainingArguments(**config["training_args"])
 
         else:
             training_args = Seq2SeqTrainingArguments(
@@ -71,7 +70,6 @@ def load_training_arguments(args):
                 push_to_hub=args.push_to_hub,
                 report_to=args.report_to,
                 metric_for_best_model=args.metric_for_best_model,
-                callbacks=callbacks,
                 run_name=args.run_name
             )
 
@@ -81,13 +79,12 @@ def load_training_arguments(args):
         logger.error(f"Error while loading training arguments: {e}")
         raise e
 
-def load_callbacks(args) -> list:
+def load_callbacks() -> list:
     try:
         callbacks = []
         early_stopping_callback = EarlyStoppingCallback(
-            early_stopping_patience=args.early_stopping_patience
+            early_stopping_patience=2
         )
-
         callbacks.append(early_stopping_callback)
         return callbacks
     
@@ -97,12 +94,14 @@ def load_callbacks(args) -> list:
 
 def load_trainer(model, training_args, dataset, tokenizer):
     try:
+        callbacks = load_callbacks(args)
         trainer = Seq2SeqTrainer(
             model=model,
             args=training_args,
             train_dataset=dataset["train"],
             eval_dataset=dataset["validation"],
             tokenizer=tokenizer,
+            callbacks=callbacks,
             compute_metrics=compute_metrics(tokenizer=tokenizer)
         )
         return trainer
