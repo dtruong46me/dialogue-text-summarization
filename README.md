@@ -36,13 +36,15 @@ Matt invites Agnes for a date to get to know each other better. They'll go to th
 
 We'll utilize the `DialogSum` dataset accessible from 🤗**Hugging Face** (https://huggingface.co/datasets/knkarthick/dialogsum) and **Paper** (https://arxiv.org/pdf/2105.06762.pdf). This dataset comprises real-life dialogue scenarios paired with corresponding manually crafted summaries and dialogue topics.
 
+`DialogSum` is a large-scale dialogue summarization dataset, consisting of **13,460** (Plus 100 holdout data for topic generation) dialogues with corresponding manually labeled summaries and topics.
+
 Here's a sample of the `DialogSum` dataset structure:
 
 
 |id|dialogue|summary|topic|
 |-|-|-|-|
-|train_3|#Person1#: Why didn't you tell me you had a girlfriend? #Person2#: Sorry, I thought you knew. #Person1#: But you should tell me you were in love with her. #Person2#: Didn't I? #Person1#: You know you didn't. #Person2#: Well, I am telling you now. #Person1#: Yes, but you might have told me before. #Person2#: I didn't think you would be interested. #Person1#: You can't be serious. How dare you not tell me you are going to marry her? #Person2#: Sorry, I didn't think it mattered. #Person1#: Oh, you men! You are all the same.|#Person1#'s angry because #Person2# didn't tell #Person1# that #Person2# had a girlfriend and would marry her.|have a girl friend|
-|train_16|#Person1#: Tell me something about your Valentine's Day. #Person2#: Ok, on that day, boys usually give roses to the sweet hearts and girls give them chocolate in return. #Person1#: So romantic. young people must have lot of fun. #Person2#: Yeah, that is what the holiday is for, isn't it?|#Person2# tells #Person1# their Valentine's Day. #Person1# feels it's romantic.|Valentine's Day|
+|train_3|#Person1#: Why didn't you tell me you had a girlfriend? #Person2#: Sorry, I thought you knew. ... #Person1#: Oh, you men! You are all the same.|#Person1#'s angry because #Person2# didn't tell #Person1# that #Person2# had a girlfriend and would marry her.|have a girl friend|
+|train_16|#Person1#: Tell me something about your Valentine's Day. ...#Person2#: Yeah, that is what the holiday is for, isn't it?|#Person2# tells #Person1# their Valentine's Day. #Person1# feels it's romantic.|Valentine's Day|
 |...|...|...|...|
 
 # Method
@@ -63,6 +65,12 @@ To tailor these LLMs specifically for dialogue summarization, we will investigat
     + Low-Rank Adaptation **(LoRA)**
     + Quantized Low-Rank Adaptation **(QLoRA)**
 
+# Installation
+
+```
+!git clone "https://github.com/dtruong46me/dialogue-text-summarization.git"
+```
+
 # Contributions
 
 **Supervisor:** Prof. Le Thanh Huong
@@ -75,3 +83,21 @@ To tailor these LLMs specifically for dialogue summarization, we will investigat
 |2|Nguyen Tung Luong|20214913|luong.nt214913@sis.hust.edu.vn|
 |3|Vu Tuan Minh|20210597|minh.vt210597@sis.hust.edu.vn|
 |4|Hoang Tu Quyen|20214929|quyen.ht214929@sis.hust.edu.vn|
+
+# [Bonus] How to run Streamlit on Kaggle
+
+```
+!pip install -q streamlit
+```
+
+```
+!wget -q -O - ipv4.icanhazip.com
+```
+
+```
+!npm install -g localtunnel -q
+```
+
+```
+!streamlit run "/kaggle/working/dialogue-text-summarization/streamlit_app.py" & npx localtunnel --port 8501
+```

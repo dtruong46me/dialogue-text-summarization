@@ -3,19 +3,14 @@ import nltk
 import numpy as np
 from nltk.tokenize import sent_tokenize
 
+from transformers import AutoTokenizer
+
 import os
 import sys
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
-from model.models import GeneralModel
-
-
-# Tokenizer
-checkpoint = "google/flan-t5-base"
-model = GeneralModel(checkpoint)
-tokenizer = model.tokenizer
 
 def postprocess_text(preds, labels):
     nltk.download("punkt")
@@ -30,7 +25,7 @@ def postprocess_text(preds, labels):
     return preds, labels
 
 
-def compute_metrics(eval_preds):
+def compute_metrics(eval_preds, tokenizer):
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]
@@ -47,14 +42,15 @@ def compute_metrics(eval_preds):
     rouge_results = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
     rouge_results = {k: round(v * 100, 4) for k, v in rouge_results.items()}
     
-    result = {
+    results = {
         "rouge1": rouge_results["rouge1"],
         "rouge2": rouge_results["rouge2"],
         "rougeL": rouge_results["rougeL"],
+        "rougeLsum": rouge_results["rougeLsum"],
         "gen_len": np.mean([np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds])
     }
 
-    return result
+    return results
 
 if __name__=='__main__':
     pass
