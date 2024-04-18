@@ -95,6 +95,9 @@ def load_callbacks(args) -> list:
 def load_trainer(model, training_args, dataset, tokenizer, args):
     try:
         callbacks = load_callbacks(args)
+        def custom_compute_metrics(eval_preds):
+            return compute_metrics(eval_preds, tokenizer)
+
         trainer = Seq2SeqTrainer(
             model=model,
             args=training_args,
@@ -102,7 +105,7 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
             eval_dataset=dataset["validation"],
             tokenizer=tokenizer,
             callbacks=callbacks,
-            compute_metrics=compute_metrics(tokenizer=tokenizer)
+            compute_metrics=custom_compute_metrics
         )
         return trainer
     
