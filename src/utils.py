@@ -79,11 +79,11 @@ def load_training_arguments(args):
         logger.error(f"Error while loading training arguments: {e}")
         raise e
 
-def load_callbacks() -> list:
+def load_callbacks(args) -> list:
     try:
         callbacks = []
         early_stopping_callback = EarlyStoppingCallback(
-            early_stopping_patience=2
+            early_stopping_patience=args.early_stopping_patience
         )
         callbacks.append(early_stopping_callback)
         return callbacks
@@ -92,7 +92,7 @@ def load_callbacks() -> list:
         logger.error(f"Error while loading callbacks: {e}")
         raise e
 
-def load_trainer(model, training_args, dataset, tokenizer):
+def load_trainer(model, training_args, dataset, tokenizer, args):
     try:
         callbacks = load_callbacks(args)
         trainer = Seq2SeqTrainer(
