@@ -17,10 +17,12 @@ class GeneralModel:
 
     def generate(self, input_text, **kwargs):
         try:
-            logger.info(f"Generating output: {input_text}")
+            logger.info(f"Generating output...")
             input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
             outputs = self.base_model.generate(input_ids, **kwargs)
             generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            logger.info(f"Summary: {generated_text}")
+
             return generated_text
 
         except Exception as e:

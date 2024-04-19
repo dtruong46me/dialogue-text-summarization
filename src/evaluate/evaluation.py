@@ -12,9 +12,9 @@ import argparse
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
-from model.models import load_model, GeneralModel
-from data.ingest_data import ingest_data
-from data.data_strategy import PostPreprocessData
+from model.models import GeneralModel
+# from data.ingest_data import ingest_data
+# from data.data_strategy import PostPreprocessData
 
 
 logging.basicConfig(level=logging.INFO)
