@@ -1,3 +1,6 @@
 wandb
 huggingface_hub
 accelerate
+evaluate
+nltk
+rouge_score
