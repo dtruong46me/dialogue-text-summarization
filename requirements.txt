@@ -4,3 +4,4 @@ accelerate
 evaluate
 nltk
 rouge_score
+peft==0.2.0

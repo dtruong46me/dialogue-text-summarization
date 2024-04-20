@@ -16,11 +16,32 @@ from data.ingest_data import ingest_data
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def training_pipeline(args: argparse.Namespace):
+def training_pipeline(args: argparse.Namespace, lora = False, quantize = False):
     try:
         # Load model from checkpoint
         model = load_model(args.checkpoint)
         logger.info("Complete loading model!")
+
+        if (lora == True):
+            from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
+
+            # Define LoRA Config 
+            lora_config = LoraConfig(
+                r=16, 
+                lora_alpha=32,
+                target_modules=["q", "v"],
+                lora_dropout=0.05,
+                bias="none",
+                task_type=TaskType.SEQ_2_SEQ_LM
+            )
+            if (quantize == True):
+                # prepare int-8 model for training
+                model = model.prepare_for_int8()
+
+            # add LoRA adaptor
+            model = model.get_peft(lora_config)
+            #model.print_trainable_parameters()
+            logger.info("Complete loading LoRA! Number of trainable parameter: ", model.get_nb_trainable_parameters())
 
         # Load data from datapath
         data = ingest_data(args.datapath)

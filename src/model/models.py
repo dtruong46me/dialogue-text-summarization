@@ -29,6 +29,12 @@ class GeneralModel:
             logger.error(f"Error while generating: {e}")
             raise e
 
+    def prepare_for_int8(self):
+        self.base_model = prepare_model_for_int8_training(self.base_model)
+
+    def get_peft(self, lora_config):
+        self.base_model = get_peft_model(self.base_model, lora_config)
+
 
 # FLAN-T5 MODEL
 class FlanT5Model(GeneralModel):
