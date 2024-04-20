@@ -36,10 +36,10 @@ def training_pipeline(args: argparse.Namespace):
             )
             if (args.quantize == True):
                 # prepare int-8 model for training
-                model = model.prepare_for_int8()
+                model.prepare_for_int8()
 
             # add LoRA adaptor
-            model = model.get_peft(lora_config)
+            model.get_peft(lora_config)
             #model.print_trainable_parameters()
             logger.info("Complete loading LoRA! Number of trainable parameter: ", model.get_nb_trainable_parameters())
 
