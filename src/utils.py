@@ -61,7 +61,18 @@ class WandBCallback(TrainerCallback):
         self.step = 0
 
     def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
-        eval_preds = state.evaluation_results
+        epoch = state.epoch
+        print("Current epoch: ", epoch)
+        step = state.global_step
+        print("Current step: ", step)
+        eval_preds = state.log_history
+        print(eval_preds)
+        print("------")
+        training_loss = state.training_loss
+        print("Current training loss: ", training_loss)
+        validation_loss = state.validation_loss
+        print("Current valid loss: ", validation_loss)
+        
         metrics = compute_metrics(eval_preds, self.tokenizer)
 
         rouge1 = metrics["rouge1"]
@@ -69,11 +80,7 @@ class WandBCallback(TrainerCallback):
         rougeL = metrics["rougeL"]
         rougeLsum = metrics["rougeLsum"]
         gen_len = metrics["gen_len"]
-        validation_loss = state.validation_loss
-        training_loss = state.training_loss
-        epoch = state.epoch
-        step = state.global_step
-
+        
         wandb.log({
             "Training Loss": training_loss,
             "Validation Loss": validation_loss,
