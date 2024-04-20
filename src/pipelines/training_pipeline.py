@@ -16,13 +16,13 @@ from data.ingest_data import ingest_data
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def training_pipeline(args: argparse.Namespace, lora = False, quantize = False):
+def training_pipeline(args: argparse.Namespace):
     try:
         # Load model from checkpoint
         model = load_model(args.checkpoint)
         logger.info("Complete loading model!")
 
-        if (lora == True):
+        if (args.lora == True):
             from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
 
             # Define LoRA Config 
@@ -34,7 +34,7 @@ def training_pipeline(args: argparse.Namespace, lora = False, quantize = False):
                 bias="none",
                 task_type=TaskType.SEQ_2_SEQ_LM
             )
-            if (quantize == True):
+            if (args.quantize == True):
                 # prepare int-8 model for training
                 model = model.prepare_for_int8()
 
