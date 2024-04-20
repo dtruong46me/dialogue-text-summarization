@@ -73,25 +73,25 @@ class WandBCallback(TrainerCallback):
         validation_loss = state.log_history[1]["eval_loss"]
         logger.info("Current valid loss: ", validation_loss)
         
-        eval_preds = state.eval_results
-        metrics = compute_metrics(eval_preds, self.tokenizer)
+        # eval_preds = state.eval_results
+        # metrics = compute_metrics(eval_preds, self.tokenizer)
 
-        rouge1 = metrics["rouge1"]
-        rouge2 = metrics["rouge2"]
-        rougeL = metrics["rougeL"]
-        rougeLsum = metrics["rougeLsum"]
-        gen_len = metrics["gen_len"]
+        # rouge1 = metrics["rouge1"]
+        # rouge2 = metrics["rouge2"]
+        # rougeL = metrics["rougeL"]
+        # rougeLsum = metrics["rougeLsum"]
+        # gen_len = metrics["gen_len"]
         
         wandb.log({
             "Training Loss": training_loss,
             "Validation Loss": validation_loss,
             "Epoch": epoch,
-            "Step": step,
-            "Rouge1": rouge1,
-            "Rouge2": rouge2,
-            "RougeL": rougeL,
-            "RougeLsum": rougeLsum,
-            "Gen_Len": gen_len
+            "Step": step
+            # "Rouge1": rouge1,
+            # "Rouge2": rouge2,
+            # "RougeL": rougeL,
+            # "RougeLsum": rougeLsum,
+            # "Gen_Len": gen_len
         })
 
 def load_training_arguments(args):
@@ -146,14 +146,14 @@ def load_callbacks(args) -> list:
 def load_trainer(model, training_args, dataset, tokenizer, args):
     try:
         # callbacks = load_callbacks(args)
-        def custom_compute_metrics(eval_preds):
-            metrics = compute_metrics(eval_preds, tokenizer)
+        # def custom_compute_metrics(eval_preds):
+        #     metrics = compute_metrics(eval_preds, tokenizer)
 
-            wandb.log(metrics)
+            # wandb.log(metrics)
 
-            return metrics
+            # return metrics
 
-        # callbacks = [WandBCallback(tokenizer)]
+        callbacks = [WandBCallback(tokenizer)]
 
         trainer = Seq2SeqTrainer(
             model=model,
@@ -161,8 +161,8 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
             train_dataset=dataset["train"],
             eval_dataset=dataset["validation"],
             tokenizer=tokenizer,
-            # callbacks=callbacks,
-            compute_metrics=custom_compute_metrics
+            callbacks=callbacks,
+            # compute_metrics=custom_compute_metrics
         )
         return trainer
     
