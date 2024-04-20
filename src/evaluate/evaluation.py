@@ -64,7 +64,6 @@ if __name__=='__main__':
     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
     args = parser.parse_args()
 
-
     datapath = args.datapath
     checkpoint = args.checkpoint
 
@@ -73,4 +72,5 @@ if __name__=='__main__':
     model = GeneralModel(checkpoint)
 
     results = evaluation_rouge(model, data)
+    logger.info(results)
     print(results)

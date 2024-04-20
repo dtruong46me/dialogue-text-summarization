@@ -62,17 +62,18 @@ class WandBCallback(TrainerCallback):
 
     def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, **kwargs):
         epoch = state.epoch
-        print("Current epoch: ", epoch)
+        logger.info("Current epoch: ", epoch)
+
         step = state.global_step
-        print("Current step: ", step)
-        eval_preds = state.log_history
-        print(eval_preds)
-        print("------")
-        training_loss = state.training_loss
-        print("Current training loss: ", training_loss)
-        validation_loss = state.validation_loss
-        print("Current valid loss: ", validation_loss)
+        logger.info("Current step: ", step)
+
+        training_loss = state.log_history[0]["loss"]
+        logger.info("Current training loss: ", training_loss)
+
+        validation_loss = state.log_history[1]["eval_loss"]
+        logger.info("Current valid loss: ", validation_loss)
         
+        eval_preds = state.eval_results
         metrics = compute_metrics(eval_preds, self.tokenizer)
 
         rouge1 = metrics["rouge1"]
@@ -145,10 +146,14 @@ def load_callbacks(args) -> list:
 def load_trainer(model, training_args, dataset, tokenizer, args):
     try:
         # callbacks = load_callbacks(args)
-        # def custom_compute_metrics(eval_preds):
-        #     return compute_metrics(eval_preds, tokenizer)
+        def custom_compute_metrics(eval_preds):
+            metrics = compute_metrics(eval_preds, tokenizer)
 
-        callbacks = [WandBCallback(tokenizer)]
+            wandb.log(metrics)
+
+            return metrics
+
+        # callbacks = [WandBCallback(tokenizer)]
 
         trainer = Seq2SeqTrainer(
             model=model,
@@ -156,8 +161,8 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
             train_dataset=dataset["train"],
             eval_dataset=dataset["validation"],
             tokenizer=tokenizer,
-            callbacks=callbacks,
-            # compute_metrics=custom_compute_metrics
+            # callbacks=callbacks,
+            compute_metrics=custom_compute_metrics
         )
         return trainer
     

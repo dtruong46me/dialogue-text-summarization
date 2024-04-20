@@ -37,6 +37,7 @@ if __name__=='__main__':
         os.environ["HUGGINGFACE_TOKEN"] = huggingface_hub_token
     
     if wandb_token:
+        os.environ["WANDB_PROJECT"] = "nlp_project"
         os.environ["WANDB_API_KEY"] = wandb_token
 
     # Login to Huggingface Hub and WandB
