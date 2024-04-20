@@ -24,6 +24,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description="Evaluation metric")
     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
+    parser.add_argument("--resultpath", type=str, default="./")
     args = parser.parse_args()
     
     datapath = args.datapath

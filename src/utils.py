@@ -67,6 +67,8 @@ class WandBCallback(TrainerCallback):
         step = state.global_step
         logger.info("Current step: ", step)
 
+        print(state.log_history)
+
         training_loss = state.log_history[0]["loss"]
         logger.info("Current training loss: ", training_loss)
 
