@@ -55,6 +55,11 @@ def evaluation_rouge(model: GeneralModel, data: Dataset) -> dict:
     rouge_evaluator = RougeEvaluation()
 
     results = rouge_evaluator.compute_rouge_metric(model_summaries, human_summaries)
+
+    generated_lengths = [len(summary.split()) for summary in model_summaries]
+    average_gen_len = sum(generated_lengths) / len(generated_lengths) if generated_lengths else 0
+
+    results["gen_len"] = average_gen_len
     
     return results
 

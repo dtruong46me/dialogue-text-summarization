@@ -156,7 +156,7 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
 
             # return metrics
 
-        callbacks = [WandBCallback(tokenizer)]
+        # callbacks = [WandBCallback(tokenizer)]
 
         trainer = Seq2SeqTrainer(
             model=model,
@@ -164,7 +164,7 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
             train_dataset=dataset["train"],
             eval_dataset=dataset["validation"],
             tokenizer=tokenizer,
-            callbacks=callbacks,
+            # callbacks=callbacks,
             # compute_metrics=custom_compute_metrics
         )
         return trainer
