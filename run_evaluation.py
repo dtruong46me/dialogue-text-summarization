@@ -39,4 +39,5 @@ if __name__=='__main__':
     logger.info(f"Loaded model from: {checkpoint}")
 
     results = evaluation_rouge(model, data)
-    
+    logger.info(results)
+    print(results)
