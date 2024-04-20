@@ -2,7 +2,7 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
+from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
