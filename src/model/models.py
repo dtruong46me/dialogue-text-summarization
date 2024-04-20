@@ -34,6 +34,9 @@ class GeneralModel:
 
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
+    
+    def get_base_model(self):
+        return self.base_model
 
 
 # FLAN-T5 MODEL
