@@ -4,5 +4,3 @@ accelerate
 evaluate
 nltk
 rouge_score
-peft
-"transformers" "datasets" "accelerate" "evaluate" "bitsandbytes" loralib --upgrade --quiet
