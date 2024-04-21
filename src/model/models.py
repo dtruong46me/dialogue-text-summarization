@@ -49,7 +49,7 @@ class BartModel(GeneralModel):
 class FlanT5Model_LoRA(GeneralModel):
     def __init__(self, checkpoint, bnb_config):
         super().__init__(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True).to(self.device)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
 
     def prepare_quantize(self):
         self.base_model = prepare_model_for_kbit_training(self.base_model)
