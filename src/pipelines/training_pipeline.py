@@ -40,8 +40,8 @@ def training_pipeline(args: argparse.Namespace):
 
             # add LoRA adaptor
             model.get_peft(lora_config)
-            #model.print_trainable_parameters()
-            logger.info("Complete loading LoRA! ")
+            model.base_model.print_trainable_parameters()
+            logger.info("Complete loading LoRA! " + str(model.base_model.get_nb_trainable_parameters()))
 
         # Load data from datapath
         data = ingest_data(args.datapath)
@@ -61,7 +61,7 @@ def training_pipeline(args: argparse.Namespace):
                                dataset=data,
                                tokenizer=model.tokenizer,
                                args=args)
-        logger.info("Complete loading trainer! NB params: " + str(model.base_model.get_nb_trainable_parameters()))
+        logger.info("Complete loading trainer!")
 
         # Train model
         trainer.train()

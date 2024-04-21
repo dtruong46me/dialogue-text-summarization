@@ -36,6 +36,7 @@ class GeneralModel:
         self.base_model = get_peft_model(self.base_model, lora_config)
     
 
+
 # FLAN-T5 MODEL
 class FlanT5Model(GeneralModel):
     def __init__(self, checkpoint):
