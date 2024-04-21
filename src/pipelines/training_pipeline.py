@@ -24,7 +24,7 @@ def training_pipeline(args: argparse.Namespace):
 
         if (args.lora == True):
             from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
-
+       
             # Define LoRA Config 
             lora_config = LoraConfig(
                 r=16, 
@@ -41,7 +41,7 @@ def training_pipeline(args: argparse.Namespace):
             # add LoRA adaptor
             model.get_peft(lora_config)
             #model.print_trainable_parameters()
-            logger.info("Complete loading LoRA!")
+            logger.info("Complete loading LoRA! ")
 
         # Load data from datapath
         data = ingest_data(args.datapath)
@@ -61,7 +61,7 @@ def training_pipeline(args: argparse.Namespace):
                                dataset=data,
                                tokenizer=model.tokenizer,
                                args=args)
-        logger.info("Complete loading trainer!")
+        logger.info("Complete loading trainer! NB params: " + str(model.base_model.get_nb_trainable_parameters()))
 
         # Train model
         trainer.train()

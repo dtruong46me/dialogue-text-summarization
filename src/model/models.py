@@ -14,7 +14,7 @@ class GeneralModel:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
-
+        
     def generate(self, input_text, **kwargs):
         try:
             logger.info(f"Generating output...")
@@ -35,9 +35,6 @@ class GeneralModel:
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
     
-    def get_base_model(self):
-        return self.base_model
-
 
 # FLAN-T5 MODEL
 class FlanT5Model(GeneralModel):
