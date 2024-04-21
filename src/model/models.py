@@ -35,12 +35,14 @@ class GeneralModel:
 class FlanT5Model(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
 
 # BART MODEL
 class BartModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
 class FlanT5Model_LoRA(GeneralModel):
     def __init__(self, checkpoint):
