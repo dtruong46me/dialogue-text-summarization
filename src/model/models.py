@@ -2,7 +2,7 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -44,13 +44,15 @@ class BartModel(GeneralModel):
         super().__init__(checkpoint)  
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
-class FlanT5Model_LoRA(GeneralModel):
-    def __init__(self, checkpoint):
-        super().__init__(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, load_in_8bit=True, device_map="auto").to(self.device)
 
-    def prepare_for_int8(self):
-        self.base_model = prepare_model_for_int8_training(self.base_model)
+#FlanT5 model using LoRA
+class FlanT5Model_LoRA(GeneralModel):
+    def __init__(self, checkpoint, bnb_config):
+        super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True).to(self.device)
+
+    def prepare_quantize(self):
+        self.base_model = prepare_model_for_kbit_training(self.base_model)
 
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
