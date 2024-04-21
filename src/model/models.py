@@ -13,8 +13,9 @@ class GeneralModel:
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
-        
+        #self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+        self.base_model = None
+
     def generate(self, input_text, **kwargs):
         try:
             logger.info(f"Generating output...")
@@ -29,13 +30,6 @@ class GeneralModel:
             logger.error(f"Error while generating: {e}")
             raise e
 
-    def prepare_for_int8(self):
-        self.base_model = prepare_model_for_int8_training(self.base_model)
-
-    def get_peft(self, lora_config):
-        self.base_model = get_peft_model(self.base_model, lora_config)
-    
-
 
 # FLAN-T5 MODEL
 class FlanT5Model(GeneralModel):
@@ -48,7 +42,16 @@ class BartModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
 
+class FlanT5Model_LoRA(GeneralModel):
+    def __init__(self, checkpoint):
+        super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, load_in_8bit=True, device_map="auto").to(self.device)
 
+    def prepare_for_int8(self):
+        self.base_model = prepare_model_for_int8_training(self.base_model)
+
+    def get_peft(self, lora_config):
+        self.base_model = get_peft_model(self.base_model, lora_config)
 
 def load_model(checkpoint):
     """

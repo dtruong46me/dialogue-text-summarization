@@ -18,13 +18,15 @@ logger = logging.getLogger(__name__)
 
 def training_pipeline(args: argparse.Namespace):
     try:
-        # Load model from checkpoint
-        model = load_model(args.checkpoint)
-        logger.info("Complete loading model!")
-
-        if (args.lora == True):
+        if (args.lora == False):
+            # Load model from checkpoint
+            model = load_model(args.checkpoint)
+            logger.info("Complete loading model!")
+        else:
             from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
-       
+            from model.models import FlanT5Model_LoRA
+
+            model = FlanT5Model_LoRA(args.checkpoint)
             # Define LoRA Config 
             lora_config = LoraConfig(
                 r=16, 
