@@ -7,10 +7,10 @@ class IngestDataset:
         self.datapath = datapath
 
     def get_data(self) -> DatasetDict:
-        print(f"Loading data from {self.datapath}")
+        print(f"\033[92mLoading data from {self.datapath}\033[00m")
 
         data = load_dataset(self.datapath, trust_remote_code=True)
-        print(f"Complete loading data from {self.datapath}")
+        print(f"\033[92mComplete loading data from {self.datapath}\033[00m")
         
         return data
     

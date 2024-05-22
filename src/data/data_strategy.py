@@ -25,7 +25,7 @@ class DataDivideStrategy(DataStrategy):
             pass
 
         except Exception as e:
-            print(f"Error while dividing data: {e}")
+            print(f"\033[92mError while dividing data: {e}")
             raise e
         
 
@@ -38,10 +38,10 @@ class DataTokenizingStrategy(DataStrategy):
             
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-            print(f"Tokenizing dataset!")
+            print(f"\033[92mTokenizing dataset!\033[00m")
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
 
-            print(f"Removing unnecessary columns!")
+            print(f"\033[92mRemoving unnecessary columns!\033[00m")
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
 
             # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)

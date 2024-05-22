@@ -4,8 +4,6 @@ from huggingface_hub import login
 import warnings
 warnings.filterwarnings("ignore")
 
-import logging
-
 import os
 import sys
 
@@ -18,7 +16,7 @@ from src.utils import parse_args
 def main():
     # Load argument parser
     args = parse_args()
-    print("Loaded argument parsers")
+    print(f"\033[92mLoaded argument parsers\033[00m")
 
     checkpoint = args.checkpoint
     datapath = args.datapath
@@ -36,12 +34,12 @@ def main():
 
     # Login to Huggingface Hub and WandB
     login(token=huggingface_hub_token)
-    print("Successful login to Huggingface Hub")
+    print("\033[92mSuccessful login to Huggingface Hub\033[00m")
     wandb.login(key=wandb_token)
-    print("Successful login to WandB")
+    print("\033[92mSuccessful login to WandB\033[00m")
 
     training_pipeline(args)
-    print("Finish training pipeline")
+    print("\033[92mFinish training pipeline\033[00m")
 
 if __name__=='__main__':
     main()

@@ -25,19 +25,19 @@ def training_pipeline(args: argparse.Namespace):
         # Load model from checkpoint
         model = load_model(args.checkpoint)
         tokenizer = model.tokenizer
-        print("Complete loading model!")
+        print("\033[92mComplete loading model!\033[00m")
 
         # Load data from datapath
         data = ingest_data(args.datapath)
-        print("Complete loading dataset!")
+        print("\033[92mComplete loading dataset!\033[00m")
 
         # Pre-processing data
         data = preprocessing_data(data, model.tokenizer)
-        print("Complete pre-processing dataset!")
+        print("\033[92mComplete pre-processing dataset!\033[00m")
 
         # Load training arguments
         training_args = load_training_arguments(args)
-        print("Complete loading training arguments!")
+        print("\033[92mComplete loading training arguments!\033[00m")
 
         # Load metric
         metric = evaluate.load("rouge")
@@ -81,20 +81,20 @@ def training_pipeline(args: argparse.Namespace):
 
         # Load trainer
         trainer = Seq2SeqTrainer(model=model.base_model,
-                               training_args=training_args,
+                               args=training_args,
                                train_dataset=data["train"],
                                eval_dataset=data["validation"],
                                tokenizer=model.tokenizer,
                                compute_metrics=compute_metric)
-        print("Complete loading trainer!")
+        print("\033[92mComplete loading trainer!\033[00m")
 
         # Train model
         trainer.train()
-        print("Complete training!")
+        print("\033[92mComplete training!\033[00m")
 
         # Push to Huggingface Hub
         trainer.push_to_hub()
-        print("Complete pushing model to hub!")
+        print("\033[92mComplete pushing model to hub!\033[00m")
 
     except Exception as e:
         print(f"Error while training: {e}")

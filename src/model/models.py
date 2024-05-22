@@ -3,9 +3,6 @@ import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 # General class for BART and FLAN-T5
 class GeneralModel:
@@ -17,16 +14,16 @@ class GeneralModel:
 
     def generate_summary(self, input_text, **kwargs):
         try:
-            logger.info(f"Generating output...")
+            print(f"\033[92mGenerating output...\033[00m")
             input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
             outputs = self.base_model.generate(input_ids, **kwargs)
             generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            logger.info(f"Summary: {generated_text}")
+            print(f"\033[92mSummary: {generated_text}\033[00m")
 
             return generated_text
 
         except Exception as e:
-            logger.error(f"Error while generating: {e}")
+            print(f"Error while generating: {e}")
             raise e
 
 
@@ -56,19 +53,19 @@ def load_model(checkpoint):
     """
     try:
         if "bart" in checkpoint:
-            logger.info(f"Load Bart model from checkpoint: {checkpoint}")
+            print(f"\033[92mLoad Bart model from checkpoint: {checkpoint}\033[00m")
             return BartModel(checkpoint)
         
         if "flan" in checkpoint:
-            logger.info(f"Load Flan-T5 model from checkpoint: {checkpoint}")
+            print(f"\033[92mLoad Flan-T5 model from checkpoint: {checkpoint}\033[00m")
             return FlanT5Model(checkpoint)
         
         else:
-            logger.info(f"Load general model from checkpoint: {checkpoint}")
+            print(f"\033[92mLoad general model from checkpoint: {checkpoint}\033[00m")
             return GeneralModel(checkpoint)
         
     except Exception as e:
-        logger.error("Error while loading model: {e}")
+        print("Error while loading model: {e}")
         raise e
 
 # if __name__=='__main__':
