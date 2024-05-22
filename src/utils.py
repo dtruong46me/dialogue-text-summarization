@@ -129,7 +129,7 @@ def load_trainer(model, training_args, dataset, tokenizer, args):
             args=training_args,
             train_dataset=dataset["train"],
             eval_dataset=dataset["validation"],
-            tokenizer=tokenizer,
+            tokenizer=tokenizer
             # callbacks=callbacks,
             # compute_metrics=custom_compute_metrics
         )
