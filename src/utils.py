@@ -48,7 +48,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
     parser.add_argument("--load_best_model_at_end", type=bool, default=False)
 
-    parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--sortish_sampler", type=bool, default=True)
     parser.add_argument("--predict_with_generate", type=bool, default=True)
     args = parser.parse_args()
@@ -87,7 +86,6 @@ def load_training_arguments(args):
                 metric_for_best_model=args.metric_for_best_model,
                 load_best_model_at_end=args.load_best_model_at_end,
 
-                fp16=args.fp16,
                 sortish_sampler=args.sortish_sampler,
                 predict_with_generate=args.predict_with_generate
             )
