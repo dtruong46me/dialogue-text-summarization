@@ -10,7 +10,7 @@ class GeneralModel:
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, torch_dtype=torch.float16).to(self.device)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
     def generate_summary(self, input_text, **kwargs):
         try:

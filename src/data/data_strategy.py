@@ -46,7 +46,6 @@ class DataTokenizingStrategy(DataStrategy):
 
             print(f"\033[92mFiltering with index 100\033[00m")
             tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
-            print(tokenized_dataset)
 
             return tokenized_dataset
 
@@ -59,12 +58,12 @@ class DataTokenizingStrategy(DataStrategy):
         suffix = "\n###\nSummary: "
         inputs = [prefix + input + suffix for input in data["dialogue"]]
 
-        data["input_ids"] = self.tokenizer(inputs, max_length=1024, padding="max_length", truncation=True, return_tensors="pt").input_ids
-        data["attention_mask"] = self.tokenizer(inputs, padding="max_length", truncation=True, return_tensors="pt").attention_mask
-        data["labels"] = self.tokenizer(data["summary"], max_length=1024, padding="max_length", truncation=True, return_tensors="pt").input_ids
-        
-        print("Tokenized Inputs:", data["input_ids"])
-        print("Tokenized Labels:", data["labels"])
+        max_source_length = 1024
+        max_target_length = 256
+
+        data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        # data["attention_mask"] = self.tokenizer(inputs, padding="max_length", truncation=True, return_tensors="pt").attention_mask
+        data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         
         label_ignore_ids = []
         for label in data["labels"]:
