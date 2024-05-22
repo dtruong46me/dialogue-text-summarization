@@ -59,7 +59,7 @@ class DataTokenizingStrategy(DataStrategy):
         inputs = [prefix + input + suffix for input in data["dialogue"]]
 
         max_source_length = 512
-        max_target_length = 256
+        max_target_length = 512
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
