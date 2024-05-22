@@ -7,8 +7,6 @@ from datasets import DatasetDict
 
 from transformers import AutoTokenizer
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, path)
@@ -29,7 +27,7 @@ class DataPreprocessing:
             return self.strategy.handle_data(self.data, *args)
         
         except Exception as e:
-            logger.error(f"Error while preprocessing data: {e}")
+            print(f"Error while preprocessing data: {e}")
             raise e
         
 
@@ -43,7 +41,7 @@ def preprocessing_data(data: DatasetDict, tokenizer, *args) -> DatasetDict:
         return tokenized_data
 
     except Exception as e:
-        logger.error(f"Error while pre-processing data: {e}")
+        print(f"Error while pre-processing data: {e}")
         raise e
     
 # if __name__=='__main__':

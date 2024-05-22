@@ -18,14 +18,13 @@ def postprocess_text(preds, labels):
     preds = [pred.strip() for pred in preds]
     labels = [label.strip() for label in labels]
 
-    # rougeLSum expects newline after each sentence
     preds = ["\n".join(sent_tokenize(pred)) for pred in preds]
     labels = ["\n".join(sent_tokenize(label)) for label in labels]
 
     return preds, labels
 
 
-def compute_metrics(eval_preds, tokenizer):
+def compute_metrics(eval_preds, tokenizer, metric):
     preds, labels = eval_preds
     if isinstance(preds, tuple):
         preds = preds[0]
@@ -38,7 +37,7 @@ def compute_metrics(eval_preds, tokenizer):
     # Some simple post-processing
     decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
 
-    metric = evaluate.load("rouge")
+    # metric = evaluate.load("rouge")
     rouge_results = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
     rouge_results = {k: round(v * 100, 4) for k, v in rouge_results.items()}
     
@@ -51,6 +50,3 @@ def compute_metrics(eval_preds, tokenizer):
     }
 
     return results
-
-if __name__=='__main__':
-    pass

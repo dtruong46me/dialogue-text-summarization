@@ -15,18 +15,13 @@ sys.path.insert(0, path)
 from src.pipelines.training_pipeline import training_pipeline
 from src.utils import parse_args
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-if __name__=='__main__':
+def main():
     # Load argument parser
     args = parse_args()
-    logger.info("Loaded argument parser from CLI")
+    print("Loaded argument parsers")
 
     checkpoint = args.checkpoint
     datapath = args.datapath
-    configpath = args.configpath
 
     # Load token ID
     huggingface_hub_token = args.huggingface_hub_token
@@ -38,13 +33,15 @@ if __name__=='__main__':
     
     if wandb_token:
         os.environ["WANDB_PROJECT"] = "nlp_project"
-        os.environ["WANDB_API_KEY"] = wandb_token
 
     # Login to Huggingface Hub and WandB
     login(token=huggingface_hub_token)
-    logger.info("Successful login to Huggingface Hub")
+    print("Successful login to Huggingface Hub")
     wandb.login(key=wandb_token)
-    logger.info("Successful login to WandB")
+    print("Successful login to WandB")
 
     training_pipeline(args)
-    logger.info("Finish training pipeline")
+    print("Finish training pipeline")
+
+if __name__=='__main__':
+    main()

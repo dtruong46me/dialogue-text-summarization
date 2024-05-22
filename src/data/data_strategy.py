@@ -5,9 +5,6 @@ from datasets import DatasetDict, Dataset
 from transformers import AutoTokenizer
 from ingest_data import ingest_data
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 class DataStrategy(ABC):
     """
@@ -28,7 +25,7 @@ class DataDivideStrategy(DataStrategy):
             pass
 
         except Exception as e:
-            logger.error(f"Error while dividing data: {e}")
+            print(f"Error while dividing data: {e}")
             raise e
         
 
@@ -41,10 +38,10 @@ class DataTokenizingStrategy(DataStrategy):
             
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-            logger.info(f"Tokenizing dataset!")
+            print(f"Tokenizing dataset!")
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
 
-            logger.info(f"Removing unnecessary columns!")
+            print(f"Removing unnecessary columns!")
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
 
             # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
@@ -52,12 +49,12 @@ class DataTokenizingStrategy(DataStrategy):
             return tokenized_dataset
 
         except Exception as e:
-            logger.info(f"Error while tokenizing data: {e}")
+            print(f"Error while tokenizing data: {e}")
             raise e
         
     def preprocess_function(self, data: Dataset, *args) -> Dataset:
-        prefix = "Summarize the following conversation:\\nn"
-        suffix = "\n\nSummary: "
+        prefix = "Summarize the following conversation:\n###\n"
+        suffix = "\n###\nSummary: "
         inputs = [prefix + input + suffix for input in data["dialogue"]]
 
         data["input_ids"] = self.tokenizer(inputs, padding="max_length", truncation=True, return_tensors="pt").input_ids

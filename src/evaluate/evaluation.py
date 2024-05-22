@@ -13,12 +13,6 @@ path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
 from model.models import GeneralModel
-# from data.ingest_data import ingest_data
-# from data.data_strategy import PostPreprocessData
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class RougeEvaluation:
@@ -42,8 +36,8 @@ def evaluation_rouge(model: GeneralModel, data: Dataset) -> dict:
 
     model_summaries = []
 
-    prefix = "Summarize the followring conversation:\n\n"
-    suffix = "\n\nSummary: "
+    prefix = "Summarize the followring conversation:\n###\n"
+    suffix = "\n###\nSummary: "
 
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
@@ -77,5 +71,3 @@ if __name__=='__main__':
     model = GeneralModel(checkpoint)
 
     results = evaluation_rouge(model, data)
-    logger.info(results)
-    print(results)
