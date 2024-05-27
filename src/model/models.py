@@ -2,6 +2,7 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import BartTokenizer, BartModel
 
 
 # General class for BART and FLAN-T5
@@ -9,8 +10,11 @@ class GeneralModel:
     def __init__(self, checkpoint):
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+        self.tokenizer = None 
+        self.base_model = None
+
+    def setup(self):
+        pass
 
     def generate_summary(self, input_text, **kwargs):
         try:
@@ -28,17 +32,22 @@ class GeneralModel:
 
 
 # FLAN-T5 MODEL
-class FlanT5Model(GeneralModel):
+class FlanT5SumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
 
+    def setup(self):
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 # BART MODEL
-class BartModel(GeneralModel):
+class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
 
-
+    def setup(self):
+        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+        self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
 
 def load_model(checkpoint):
     """
@@ -54,11 +63,11 @@ def load_model(checkpoint):
     try:
         if "bart" in checkpoint:
             print(f"\033[92mLoad Bart model from checkpoint: {checkpoint}\033[00m")
-            return BartModel(checkpoint)
+            return BartSumModel(checkpoint)
         
         if "flan" in checkpoint:
             print(f"\033[92mLoad Flan-T5 model from checkpoint: {checkpoint}\033[00m")
-            return FlanT5Model(checkpoint)
+            return FlanT5SumModel(checkpoint)
         
         else:
             print(f"\033[92mLoad general model from checkpoint: {checkpoint}\033[00m")

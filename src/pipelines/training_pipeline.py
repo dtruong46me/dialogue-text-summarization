@@ -24,6 +24,7 @@ def training_pipeline(args: argparse.Namespace):
     try:
         # Load model from checkpoint
         model = load_model(args.checkpoint)
+        model.setup()
         tokenizer = model.tokenizer
         print("\033[92mComplete loading model!\033[00m")
 
