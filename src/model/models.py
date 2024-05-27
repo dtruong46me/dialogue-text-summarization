@@ -16,19 +16,23 @@ class GeneralModel:
     def setup(self):
         pass
 
-    def generate_summary(self, input_text, **kwargs):
-        try:
-            print(f"\033[92mGenerating output...\033[00m")
-            input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
-            outputs = self.base_model.generate(input_ids, do_sample=True, **kwargs)
-            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            print(f"\033[92mSummary: {generated_text}\033[00m")
+    def forward(self, input_ids, attention_mask):
+        outputs = self.base_model.generate(input_ids, attention_mask=attention_mask)
+        return outputs
 
-            return generated_text
+    # def generate_summary(self, input_text, **kwargs):
+    #     try:
+    #         print(f"\033[92mGenerating output...\033[00m")
+    #         input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
+    #         outputs = self.base_model.generate(input_ids, do_sample=True, **kwargs)
+    #         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+    #         print(f"\033[92mSummary: {generated_text}\033[00m")
 
-        except Exception as e:
-            print(f"Error while generating: {e}")
-            raise e
+    #         return generated_text
+
+    #     except Exception as e:
+    #         print(f"Error while generating: {e}")
+    #         raise e
 
 
 # FLAN-T5 MODEL
@@ -46,7 +50,7 @@ class BartSumModel(GeneralModel):
         super().__init__(checkpoint)  
 
     def setup(self):
-        self.tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
         self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
 
 def load_model(checkpoint):

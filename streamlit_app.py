@@ -1,40 +1,71 @@
 import streamlit as st
 
+from transformers import GenerationConfig, BartModel, BartTokenizer, AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+import sys, os
+
+path = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, path)
+
+from gen_summary import generate_summary
+
 st.title("Dialogue Text Summarization")
 st.caption("Natural Language Processing Project 20232")
 
 st.write("---")
 
 with st.sidebar:
-    st.selectbox("Model", options=[
+    checkpoint = st.selectbox("Model", options=[
+        "Choose model",
         "google/flan-t5-small",
         "google/flan-t5-base",
         "google/flan-t5-large",
         "google/flan-t5-xl",
         "google/flan-t5-xxl",
-        "facebook/bart-base"
+        "facebook/bart-base",
+        "facebook/bart-large",
+        "facebook/bart-large-cnn"
     ])
     st.button("Model detail", use_container_width=True)
     st.write("-----")
     st.write("**Generate Options:**")
-    st.slider("Temperature", min_value=0.01, max_value=1.00, step=0.01)
-    st.slider("Top_k", min_value=1, max_value=20)
-    st.slider("Top_p", min_value=0.01, max_value=1.00, step=0.01)
+    min_new_tokens = st.slider("Min new tokens", min_value=1, max_value=256, step=1, value=10)
+    temperature = st.slider("Temperature", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
+    top_k = st.slider("Top_k", min_value=1, max_value=50, step=1, value=20)
+    top_p = st.slider("Top_p", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
 
-dialogue = "#Person1#: But you should tell me you were in love with her. #Person2#: Didn't I? #Person1#: You know you didn't. #Person2#: Well, I am telling you now. #Person1#: Yes, but you might have told me before. #Person2#: I didn't think you would be interested. #Person1#: You can't be serious. How dare you not tell me you are going to marry her? #Person2#: Sorry, I didn't think it mattered. #Person1#: Oh, you men! You are all the same."
 
-dialogue_with_newlines = '#Person' + '\n#Person'.join([line for line in dialogue.split('#Person') if line.strip()])
-num_lines = dialogue_with_newlines.count('\n') + 1
-height = min(num_lines * 26, 360)
+height = 260
 
-input = st.text_area("Dialogue", value=dialogue_with_newlines, height=height)
-print(input)
+input_text = st.text_area("Dialogue", height=height)
 
-col1, col2 = st.columns([1,6])
-with col1:
-    st.button("Submit")
+generation_config = GenerationConfig(
+    min_new_tokens=min_new_tokens,
+    max_new_tokens=320,
+    temperature=temperature,
+    top_p=top_p,
+    top_k=top_k
+)
 
-with col2:
-    st.button("Clear")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-st.success("#Person1#'s angry because #Person2# didn't tell #Person1# that #Person2# had a girlfriend and would marry her. ")
+if checkpoint=="Choose model":
+    tokenizer = None
+    model = None
+
+if "bart" in checkpoint:
+    tokenizer = BartTokenizer.from_pretrained(checkpoint)
+    model = BartModel.from_pretrained(checkpoint).to(device)
+
+if "flan" in checkpoint:
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
+
+if st.button("Submit"):
+    if checkpoint=="Choose model":
+        st.error("Please selece a model!")
+    else:
+        generated_text = generate_summary(model, input_text, generation_config, tokenizer)
+        st.write("Summary")
+        st.success(generated_text)
