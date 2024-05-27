@@ -34,14 +34,8 @@ class DataTokenizingStrategy(DataStrategy):
         try:
             
             self.tokenizer.pad_token = self.tokenizer.eos_token
-
-            print(f"\033[92mTokenizing dataset!\033[00m")
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
-
-            print(f"\033[92mRemoving unnecessary columns!\033[00m")
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
-
-            print(f"\033[92mFiltering with index 100\033[00m")
             tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
 
             return tokenized_dataset

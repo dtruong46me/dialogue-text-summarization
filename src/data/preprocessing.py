@@ -12,9 +12,6 @@ sys.path.insert(0, path)
 from data_strategy import *
 from ingest_data import *
 
-# checkpoint = "google/flan-t5-base"
-# tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-
 class DataPreprocessing:
     def __init__(self, data: DatasetDict, strategy: DataStrategy) -> None:
         self.data = data
@@ -45,11 +42,7 @@ def preprocessing_data(data: DatasetDict, tokenizer, *args) -> DatasetDict:
 # if __name__=='__main__':
 #     checkpoint = "google/flan-t5-base"
 #     datapath = "knkarthick/dialogsum"
-
 #     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    
 #     data = ingest_data(datapath)
-
 #     data = preprocessing_data(data, tokenizer)
-
 #     print(data)

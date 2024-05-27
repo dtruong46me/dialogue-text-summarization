@@ -29,20 +29,20 @@ class RougeEvaluation:
         return results
     
 
-def evaluation_rouge(model: GeneralModel, data: Dataset) -> dict:
+def evaluation_rouge(model: GeneralModel, data: Dataset, generation_config) -> dict:
     dialogues = data["dialogue"]
 
     human_summaries = [summary for summary in data["summary"]]
 
     model_summaries = []
 
-    prefix = "Summarize the followring conversation:\n###\n"
-    suffix = "\n###\nSummary: "
+    prefix = "Summarize the followring conversation:\n\n###"
+    suffix = "\n\nSummary: "
 
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
 
-        output_text = model.generate(input)
+        output_text = model.generate(input, generation_config)
 
         model_summaries.append(output_text)
 
@@ -57,17 +57,17 @@ def evaluation_rouge(model: GeneralModel, data: Dataset) -> dict:
     
     return results
 
-if __name__=='__main__':
-    parser = argparse.ArgumentParser(description="Evaluation metric")
-    parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
-    parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
-    args = parser.parse_args()
+# if __name__=='__main__':
+#     parser = argparse.ArgumentParser(description="Evaluation metric")
+#     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
+#     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
+#     args = parser.parse_args()
 
-    datapath = args.datapath
-    checkpoint = args.checkpoint
+#     datapath = args.datapath
+#     checkpoint = args.checkpoint
 
-    data = load_dataset(datapath, split="test")
+#     data = load_dataset(datapath, split="test")
 
-    model = GeneralModel(checkpoint)
+#     model = GeneralModel(checkpoint)
 
-    results = evaluation_rouge(model, data)
+#     results = evaluation_rouge(model, data)

@@ -10,8 +10,6 @@ class IngestDataset:
         print(f"\033[92mLoading data from {self.datapath}\033[00m")
 
         data = load_dataset(self.datapath, trust_remote_code=True)
-        print(f"\033[92mComplete loading data from {self.datapath}\033[00m")
-        
         return data
     
 
