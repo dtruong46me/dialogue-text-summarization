@@ -16,7 +16,7 @@ class GeneralModel:
         try:
             print(f"\033[92mGenerating output...\033[00m")
             input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
-            outputs = self.base_model.generate(input_ids, **kwargs)
+            outputs = self.base_model.generate(input_ids, do_sample=True, **kwargs)
             generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             print(f"\033[92mSummary: {generated_text}\033[00m")
 

@@ -2,9 +2,6 @@ import logging
 from abc import ABC, abstractclassmethod
 
 from datasets import DatasetDict, Dataset
-from transformers import AutoTokenizer
-from ingest_data import ingest_data
-
 
 class DataStrategy(ABC):
     """
@@ -54,12 +51,12 @@ class DataTokenizingStrategy(DataStrategy):
             raise e
         
     def preprocess_function(self, data: Dataset, *args) -> Dataset:
-        prefix = "Summarize the following conversation:\n###\n"
-        suffix = "\n###\nSummary: "
+        prefix = "Summarize the following conversation:\n\n###"
+        suffix = "\n\nSummary: "
         inputs = [prefix + input + suffix for input in data["dialogue"]]
 
         max_source_length = 1024
-        max_target_length = 256
+        max_target_length = 176
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
@@ -77,20 +74,13 @@ class DataTokenizingStrategy(DataStrategy):
 # if __name__=='__main__':
 #     checkpoint = "google/flan-t5-base"
 #     datapath = "knkarthick/dialogsum"
-
 #     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-
 #     dataset = ingest_data(datapath)
 #     print(dataset["train"])
-
 #     print("\n\n\n")
 #     tokenizing_data = DataTokenizingStrategy(tokenizer)
 #     tokenized_dataset = tokenizing_data.handle_data(dataset)
-
 #     print(tokenized_dataset)
-
 #     print(type(tokenized_dataset))
-
 #     print(type(tokenized_dataset["train"]))
-
 #     print(tokenized_dataset["train"][0])

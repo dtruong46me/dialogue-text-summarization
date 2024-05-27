@@ -2,13 +2,9 @@ import argparse
 
 import os
 import sys
-from transformers.trainer_callback import TrainerControl, TrainerState
-from transformers.training_args import TrainingArguments
 import yaml
 
-import logging
-
-from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, EarlyStoppingCallback
+from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, EarlyStoppingCallback, GenerationConfig
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -50,6 +46,12 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--sortish_sampler", type=bool, default=True)
     parser.add_argument("--predict_with_generate", type=bool, default=True)
+
+    parser.add_argument("--min_new_tokens", type=int, default=10)
+    parser.add_argument("--max_new_tokens", type=int, default=256)
+    parser.add_argument("--temperature", type=float, default=0.9)
+    parser.add_argument("--top_p", type=float, default=1.0)
+    parser.add_argument("--top_k", type=int, default=50)
     args = parser.parse_args()
     return args
 
@@ -87,7 +89,15 @@ def load_training_arguments(args):
                 load_best_model_at_end=args.load_best_model_at_end,
 
                 sortish_sampler=args.sortish_sampler,
-                predict_with_generate=args.predict_with_generate
+                predict_with_generate=args.predict_with_generate,
+
+                generation_config=GenerationConfig(
+                    min_new_tokens=args.min_new_tokens,
+                    max_new_tokens=args.max_new_tokens,
+                    temperature=args.temperature,
+                    top_p=args.top_p,
+                    top_k=args.top_k
+                )
             )
 
         return training_args
@@ -146,7 +156,3 @@ def load_config(configpath):
     
     else:
         return None
-
-# if __name__=='__main__':
-#     args = parse_args()
-#     print(args)
