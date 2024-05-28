@@ -1,4 +1,3 @@
-git clone -b dev/eval_metric "https://github.com/dtruong46me/dialogue-text-summarization"
 pip install -q -U datasets
 pip install -q -r "requirements.txt"
 
