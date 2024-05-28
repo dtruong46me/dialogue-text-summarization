@@ -36,7 +36,7 @@ class DataTokenizingStrategy(DataStrategy):
             self.tokenizer.pad_token = self.tokenizer.eos_token
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
-            tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
+            # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
 
             return tokenized_dataset
 
@@ -52,9 +52,13 @@ class DataTokenizingStrategy(DataStrategy):
         max_source_length = 1024
         max_target_length = 176
 
-        data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
-        # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
-        data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        data["input_ids"] = self.tokenizer(inputs, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        data["attention_mask"] = self.tokenizer(inputs, padding="max_length", truncation=True, return_tensors="pt").attention_mask
+        data["labels"] = self.tokenizer(data["summary"], padding="max_length", truncation=True, return_tensors="pt").input_ids
+
+        # data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        # # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
+        # data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         
         label_ignore_ids = []
         for label in data["labels"]:
