@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
 
     parser.add_argument("--output_dir", type=str, default="fine-tuned-flant5")
-    parser.add_argument("--overwrite_output_dir", type=bool, default=False)
+    parser.add_argument("--overwrite_output_dir", action="store_true")
     
     parser.add_argument("--num_train_epochs", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=4)
@@ -42,10 +42,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run_name", type=str, default="flan-t5-base-model")
 
     parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
-    parser.add_argument("--load_best_model_at_end", type=bool, default=False)
+    parser.add_argument("--load_best_model_at_end", action="store_true")
 
-    parser.add_argument("--sortish_sampler", type=bool, default=True)
-    parser.add_argument("--predict_with_generate", type=bool, default=True)
+    parser.add_argument("--sortish_sampler", action="store_true")
+    parser.add_argument("--predict_with_generate", action="store_true")
 
     parser.add_argument("--min_new_tokens", type=int, default=10)
     parser.add_argument("--max_new_tokens", type=int, default=256)
@@ -53,8 +53,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--top_k", type=int, default=50)
 
-    parser.add_argument("--lora", type=bool, default=False)
-    parser.add_argument("--quantize", type=bool, default=False)
+    parser.add_argument("--lora", action="store_true")
+    parser.add_argument("--quantize", action="store_true")
 
     parser.add_argument("--lora_rank", type=int, default=8)
     parser.add_argument("--lora_alpha", type=int, default=16)
