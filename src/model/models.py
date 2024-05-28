@@ -53,6 +53,8 @@ class BartSumModel(GeneralModel):
         self.base_model.generation_config.decoder_start_token_id = self.tokenizer.cls_token_id
         self.base_model.generation_config.bos_token_id = self.tokenizer.cls_token_id
 
+        print(self.base_model.generation_config)
+
 
 def load_model(checkpoint):
     """
