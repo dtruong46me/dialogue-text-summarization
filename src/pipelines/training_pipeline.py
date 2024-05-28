@@ -68,7 +68,7 @@ def training_pipeline(args: argparse.Namespace):
             model = load_model(args.checkpoint)
 
             if (args.quantize == True):
-                model.prepare_quantize()
+                model.prepare_quantize(bnb_config)
 
             # add LoRA adaptor
             model.get_peft(lora_config)
