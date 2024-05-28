@@ -48,11 +48,13 @@ class FlanT5SumModel(GeneralModel):
 # BART MODEL
 class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
-        super().__init__(checkpoint)  
-        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
+        super().__init__(checkpoint)
+        print("self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint")
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def setup(self):
-        self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
+        print("self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)")
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 
 def load_model(checkpoint):
