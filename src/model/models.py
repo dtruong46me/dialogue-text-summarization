@@ -24,6 +24,13 @@ class GeneralModel:
         outputs = self.base_model.generate(input_ids, attention_mask=attention_mask)
         return outputs
 
+    def get_peft(self, lora_config):
+        self.base_model = get_peft_model(self.base_model, lora_config)
+
+    def prepare_quantize(self):
+        self.base_model = prepare_model_for_kbit_training(self.base_model)
+
+
     # def generate_summary(self, input_text, **kwargs):
     #     try:
     #         print(f"\033[92mGenerating output...\033[00m")
@@ -43,7 +50,6 @@ class GeneralModel:
 class FlanT5SumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
     def setup(self):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
@@ -53,24 +59,10 @@ class FlanT5SumModel(GeneralModel):
 class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
-
-
-#FlanT5 model using LoRA
-class FlanT5Model_LoRA(GeneralModel):
-    def __init__(self, checkpoint, bnb_config):
-        super().__init__(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
 
     def setup(self):
         self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
         self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
-
-    def prepare_quantize(self):
-        self.base_model = prepare_model_for_kbit_training(self.base_model)
-
-    def get_peft(self, lora_config):
-        self.base_model = get_peft_model(self.base_model, lora_config)
 
 
 def load_model(checkpoint):
@@ -100,20 +92,3 @@ def load_model(checkpoint):
     except Exception as e:
         print("Error while loading model: {e}")
         raise e
-
-# if __name__=='__main__':
-#     checkpoint = "google/flan-t5-base"
-#     model = load_model(checkpoint)
-#     print(model)
-
-#     prompt = "Summarize the following conversation:\n\n#Person1#: Tell me something about your\
-#       Valentine's Day. #Person2#: Ok, on that day, boys usually give roses to the sweet hearts\
-#         and girls give them chocolate in return. #Person1#: So romantic. young people must have\
-#           lot of fun. #Person2#: Yeah, that is what the holiday is for, isn't it?\n\nSummary:"
-    
-#     output1 = model.generate(prompt, min_new_tokens=120, max_length=256)
-#     output2 = model.generate(prompt, min_new_tokens=200, max_length=512)
-
-#     print(output1)
-#     print("\n\n")
-#     print(output2)
