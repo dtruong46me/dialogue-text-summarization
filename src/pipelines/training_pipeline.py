@@ -15,7 +15,6 @@ from utils import *
 from model.model import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
-# from evaluate.rouge_metric import compute_metrics
 
 import evaluate
 

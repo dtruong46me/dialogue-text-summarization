@@ -94,11 +94,11 @@ def load_training_arguments(args):
                 report_to=args.report_to,
                 run_name=args.run_name,
 
-                metric_for_best_model=args.metric_for_best_model,
+                # metric_for_best_model=args.metric_for_best_model,
                 # load_best_model_at_end=args.load_best_model_at_end,
 
                 # sortish_sampler=args.sortish_sampler,
-                # predict_with_generate=args.predict_with_generate,
+                predict_with_generate=args.predict_with_generate,
 
                 # generation_config=GenerationConfig(
                 #     min_new_tokens=args.min_new_tokens,
