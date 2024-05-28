@@ -19,6 +19,11 @@ class GeneralModel:
     def setup(self):
         pass
 
+    def forward(self, input_ids, attention_mask):
+        outputs = self.base_model.generate(**input_ids)
+        last_hidden_states = outputs.last_hidden_state
+        return outputs, last_hidden_states
+
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
 
@@ -29,12 +34,6 @@ class GeneralModel:
             self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
         
         self.base_model = prepare_model_for_kbit_training(self.base_model)
-
-    def forward(self, input_text, **kwargs):
-        input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
-        outputs = self.base_model.generate(input_ids, **kwargs)
-        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return generated_text
 
 
 # FLAN-T5 MODEL
