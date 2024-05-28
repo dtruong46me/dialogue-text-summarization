@@ -55,6 +55,7 @@ class BartSumModel(GeneralModel):
     def setup(self):
         print("self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)")
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
+        self.base_model.generation_config.decoder_start_token_id = self.tokenizer.cls_token_id
 
 
 def load_model(checkpoint):
