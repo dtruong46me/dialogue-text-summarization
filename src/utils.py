@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora", type=bool, default=False)
     parser.add_argument("--quantize", type=bool, default=False)
 
+    parser.add_argument("--lora_rank", type=int, default=8)
+    parser.add_argument("--lora_alpha", type=int, default=16)
+    parser.add_argument("--target_modules", type=str, default="q,v")
+    parser.add_argument("--lora_dropout", type=float, default=0.05)
+
     args = parser.parse_args()
     return args
 

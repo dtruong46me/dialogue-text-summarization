@@ -1,5 +1,3 @@
-import logging
-
 import os
 import sys
 import argparse
@@ -35,10 +33,15 @@ def get_trainable_parameters(model):
 
 def training_pipeline(args: argparse.Namespace):
     try:
+        print("=========================================")
+        print('\n'.join(f' + {k}={v}' for k, v in vars(args).items()))
+        print("=========================================")
 
         if (args.lora == False):
             # Load model from checkpoint
             model = load_model(args.checkpoint)
+            model.setup()
+            tokenizer = model.tokenizer
             print("Complete loading model!")
         else:
             from peft import LoraConfig, TaskType
@@ -55,10 +58,10 @@ def training_pipeline(args: argparse.Namespace):
 
             # Define LoRA Config 
             lora_config = LoraConfig(
-                r=8, 
-                lora_alpha=32,
-                target_modules=["q", "v"],
-                lora_dropout=0.05,
+                r=args.lora_rank, 
+                lora_alpha=args.lora_alpha,
+                target_modules=args.target_modules.split(","),
+                lora_dropout=args.lora_dropout,
                 bias="none",
                 task_type=TaskType.SEQ_2_SEQ_LM
             )
