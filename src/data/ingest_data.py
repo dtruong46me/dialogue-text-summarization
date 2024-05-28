@@ -2,19 +2,14 @@ import logging
 from datasets import load_dataset
 from datasets import DatasetDict
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 class IngestDataset:
     def __init__(self, datapath: str="knkarthick/dialogsum") -> None:
         self.datapath = datapath
 
     def get_data(self) -> DatasetDict:
-        logger.info(f"Loading data from {self.datapath}")
+        print(f"\033[92mLoading data from {self.datapath}\033[00m")
 
         data = load_dataset(self.datapath, trust_remote_code=True)
-        logger.info(f"Complete loading data from {self.datapath}")
-        
         return data
     
 
@@ -26,7 +21,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         return dataset
     
     except Exception as e:
-        logger.error(f"Error while loading data: {e}")
+        print(f"Error while loading data: {e}")
         raise e
     
 

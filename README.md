@@ -47,6 +47,12 @@ Here's a sample of the `DialogSum` dataset structure:
 |train_16|#Person1#: Tell me something about your Valentine's Day. ...#Person2#: Yeah, that is what the holiday is for, isn't it?|#Person2# tells #Person1# their Valentine's Day. #Person1# feels it's romantic.|Valentine's Day|
 |...|...|...|...|
 
+**Distribution of dataset**
+
+|Dialogue|Summary|Dialogue + Summary|
+|:-:|:-:|:-:|
+|![](assets/hist_dialogue.png)|![](assets/hist_summary.png)|![](assets/hist_dialogue+summary.png)|
+
 # Method
 
 ### Pre-trained Language Models:

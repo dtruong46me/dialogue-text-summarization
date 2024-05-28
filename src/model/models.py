@@ -2,9 +2,10 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+from transformers import BartTokenizer, BartModel
+
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 # General class for BART and FLAN-T5
@@ -12,34 +13,44 @@ class GeneralModel:
     def __init__(self, checkpoint):
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        #self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+
+        self.tokenizer = None 
         self.base_model = None
 
-    def generate(self, input_text, **kwargs):
-        try:
-            logger.info(f"Generating output...")
-            input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
-            outputs = self.base_model.generate(input_ids, **kwargs)
-            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            logger.info(f"Summary: {generated_text}")
+    def setup(self):
+        pass
 
-            return generated_text
+    def forward(self, input_ids, attention_mask):
+        outputs = self.base_model.generate(input_ids, attention_mask=attention_mask)
+        return outputs
 
-        except Exception as e:
-            logger.error(f"Error while generating: {e}")
-            raise e
+    # def generate_summary(self, input_text, **kwargs):
+    #     try:
+    #         print(f"\033[92mGenerating output...\033[00m")
+    #         input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
+    #         outputs = self.base_model.generate(input_ids, do_sample=True, **kwargs)
+    #         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+    #         print(f"\033[92mSummary: {generated_text}\033[00m")
+
+    #         return generated_text
+
+    #     except Exception as e:
+    #         print(f"Error while generating: {e}")
+    #         raise e
 
 
 # FLAN-T5 MODEL
-class FlanT5Model(GeneralModel):
+class FlanT5SumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
+    def setup(self):
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 # BART MODEL
-class BartModel(GeneralModel):
+class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
@@ -51,11 +62,16 @@ class FlanT5Model_LoRA(GeneralModel):
         super().__init__(checkpoint)
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
 
+    def setup(self):
+        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
+        self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
+
     def prepare_quantize(self):
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
+
 
 def load_model(checkpoint):
     """
@@ -70,19 +86,19 @@ def load_model(checkpoint):
     """
     try:
         if "bart" in checkpoint:
-            logger.info(f"Load Bart model from checkpoint: {checkpoint}")
-            return BartModel(checkpoint)
+            print(f"\033[92mLoad Bart model from checkpoint: {checkpoint}\033[00m")
+            return BartSumModel(checkpoint)
         
         if "flan" in checkpoint:
-            logger.info(f"Load Flan-T5 model from checkpoint: {checkpoint}")
-            return FlanT5Model(checkpoint)
+            print(f"\033[92mLoad Flan-T5 model from checkpoint: {checkpoint}\033[00m")
+            return FlanT5SumModel(checkpoint)
         
         else:
-            logger.info(f"Load general model from checkpoint: {checkpoint}")
+            print(f"\033[92mLoad general model from checkpoint: {checkpoint}\033[00m")
             return GeneralModel(checkpoint)
         
     except Exception as e:
-        logger.error("Error while loading model: {e}")
+        print("Error while loading model: {e}")
         raise e
 
 # if __name__=='__main__':
