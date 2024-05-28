@@ -46,7 +46,6 @@ def training_pipeline(args: argparse.Namespace):
         else:
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
-            from model.models import FlanT5Model_LoRA
             import torch
 
             bnb_config = BitsAndBytesConfig(
@@ -66,10 +65,9 @@ def training_pipeline(args: argparse.Namespace):
                 task_type=TaskType.SEQ_2_SEQ_LM
             )
 
-            model = FlanT5Model_LoRA(args.checkpoint, bnb_config)
+            model = load_model(args.checkpoint)
 
             if (args.quantize == True):
-                # quantizing the model
                 model.prepare_quantize()
 
             # add LoRA adaptor

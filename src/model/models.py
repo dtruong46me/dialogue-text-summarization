@@ -1,11 +1,10 @@
-import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 from transformers import BartTokenizer, BartModel
 
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import get_peft_model, prepare_model_for_kbit_training
 
 
 # General class for BART and FLAN-T5
@@ -27,41 +26,31 @@ class GeneralModel:
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
 
-    def prepare_quantize(self):
+    def prepare_quantize(self, bnb_config):
+        if "bart" in self.checkpoint:
+            self.base_model = BartModel.from_pretrained(self.checkpoint, quantization_config=bnb_config, device_map={"":0}, trust_remote_code=True)
+        if "flan" in self.checkpoint:
+            self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
+        
         self.base_model = prepare_model_for_kbit_training(self.base_model)
-
-
-    # def generate_summary(self, input_text, **kwargs):
-    #     try:
-    #         print(f"\033[92mGenerating output...\033[00m")
-    #         input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
-    #         outputs = self.base_model.generate(input_ids, do_sample=True, **kwargs)
-    #         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-    #         print(f"\033[92mSummary: {generated_text}\033[00m")
-
-    #         return generated_text
-
-    #     except Exception as e:
-    #         print(f"Error while generating: {e}")
-    #         raise e
 
 
 # FLAN-T5 MODEL
 class FlanT5SumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def setup(self):
-        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 # BART MODEL
 class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
+        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
 
     def setup(self):
-        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
         self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
 
 
