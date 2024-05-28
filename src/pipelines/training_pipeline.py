@@ -11,7 +11,8 @@ sys.path.insert(0, path)
 
 from utils import *
 
-from model.models import load_model
+# from model.models import load_model
+from model.model import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
 # from evaluate.rouge_metric import compute_metrics
@@ -38,11 +39,11 @@ def training_pipeline(args: argparse.Namespace):
         print("=========================================")
 
         if (args.lora == False):
-            # Load model from checkpoint
             model = load_model(args.checkpoint)
-            model.setup()
             tokenizer = model.tokenizer
+            model.get_model()
             print("Complete loading model!")
+
         else:
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
