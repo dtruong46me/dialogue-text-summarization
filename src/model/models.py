@@ -19,11 +19,6 @@ class GeneralModel:
     def setup(self):
         pass
 
-    def forward(self, input_ids, attention_mask):
-        outputs = self.base_model.generate(**input_ids)
-        last_hidden_states = outputs.last_hidden_state
-        return outputs, last_hidden_states
-
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
 
@@ -55,8 +50,8 @@ class BartSumModel(GeneralModel):
     def setup(self):
         print("self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)")
         self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
-        self.base_model.generation_config.decoder_start_token_id = 0
-        print(self.base_model.generation_config)
+        self.base_model.generation_config.decoder_start_token_id = self.tokenizer.cls_token_id
+        self.base_model.generation_config.bos_token_id = self.tokenizer.cls_token_id
 
 
 def load_model(checkpoint):
