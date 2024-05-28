@@ -2,7 +2,7 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,8 @@ class GeneralModel:
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+        #self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+        self.base_model = None
 
     def generate(self, input_text, **kwargs):
         try:
@@ -34,14 +35,27 @@ class GeneralModel:
 class FlanT5Model(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
 
 # BART MODEL
 class BartModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
 
+#FlanT5 model using LoRA
+class FlanT5Model_LoRA(GeneralModel):
+    def __init__(self, checkpoint, bnb_config):
+        super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
+
+    def prepare_quantize(self):
+        self.base_model = prepare_model_for_kbit_training(self.base_model)
+
+    def get_peft(self, lora_config):
+        self.base_model = get_peft_model(self.base_model, lora_config)
 
 def load_model(checkpoint):
     """
