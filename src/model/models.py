@@ -19,10 +19,6 @@ class GeneralModel:
     def setup(self):
         pass
 
-    def forward(self, input_ids, attention_mask):
-        outputs = self.base_model.generate(input_ids, attention_mask=attention_mask)
-        return outputs
-
     def get_peft(self, lora_config):
         self.base_model = get_peft_model(self.base_model, lora_config)
 
