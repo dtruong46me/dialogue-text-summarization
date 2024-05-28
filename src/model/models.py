@@ -2,7 +2,10 @@ import logging
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
 from transformers import BartTokenizer, BartModel
+
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 
 # General class for BART and FLAN-T5
@@ -10,6 +13,7 @@ class GeneralModel:
     def __init__(self, checkpoint):
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         self.tokenizer = None 
         self.base_model = None
 
@@ -39,6 +43,7 @@ class GeneralModel:
 class FlanT5SumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
 
     def setup(self):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
@@ -48,10 +53,25 @@ class FlanT5SumModel(GeneralModel):
 class BartSumModel(GeneralModel):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)  
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(self.device)
+
+
+#FlanT5 model using LoRA
+class FlanT5Model_LoRA(GeneralModel):
+    def __init__(self, checkpoint, bnb_config):
+        super().__init__(checkpoint)
+        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
 
     def setup(self):
         self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
         self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
+
+    def prepare_quantize(self):
+        self.base_model = prepare_model_for_kbit_training(self.base_model)
+
+    def get_peft(self, lora_config):
+        self.base_model = get_peft_model(self.base_model, lora_config)
+
 
 def load_model(checkpoint):
     """

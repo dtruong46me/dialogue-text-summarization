@@ -52,6 +52,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--temperature", type=float, default=0.9)
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--top_k", type=int, default=50)
+
+    parser.add_argument("--lora", type=bool, default=False)
+    parser.add_argument("--quantize", type=bool, default=False)
+
     args = parser.parse_args()
     return args
 
