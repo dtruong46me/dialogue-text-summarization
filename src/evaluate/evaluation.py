@@ -1,13 +1,9 @@
-import logging
-
 import os
 import sys
 
-from datasets import Dataset, load_dataset
+from datasets import Dataset
 
 import evaluate
-
-import argparse
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -44,7 +40,7 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
 
-        output_text = model.base_model.generate(input, generation_config)
+        output_text = model.generate_summary(input, generation_config)
 
         model_summaries.append(output_text)
 
@@ -58,18 +54,3 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     results["gen_len"] = average_gen_len
     
     return results
-
-# if __name__=='__main__':
-#     parser = argparse.ArgumentParser(description="Evaluation metric")
-#     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
-#     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
-#     args = parser.parse_args()
-
-#     datapath = args.datapath
-#     checkpoint = args.checkpoint
-
-#     data = load_dataset(datapath, split="test")
-
-#     model = Model(checkpoint)
-
-#     results = evaluation_rouge(model, data)

@@ -28,6 +28,7 @@ def main():
     # Login to Huggingface Hub and WandB
     login(token=huggingface_hub_token)
     print("\033[92mSuccessful login to Huggingface Hub\033[00m")
+    
     wandb.login(key=wandb_token)
     print("\033[92mSuccessful login to WandB\033[00m")
 

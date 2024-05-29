@@ -1,48 +1,53 @@
-import os
-import sys
 
-from datasets import DatasetDict
-
-from transformers import AutoTokenizer
+from datasets import DatasetDict, Dataset
 
 
-path = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, path)
+class DataTokenizing:
+    def __init__(self, tokenizer) -> None:
+        self.tokenizer = tokenizer
 
-from data_strategy import *
-from ingest_data import *
-
-class DataPreprocessing:
-    def __init__(self, data: DatasetDict, strategy: DataStrategy) -> None:
-        self.data = data
-        self.strategy = strategy
-
-    def handle_data(self, *args):
+    def handle_data(self, data: DatasetDict, *args) -> DatasetDict:
         try:
-            return self.strategy.handle_data(self.data, *args)
-        
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            tokenized_dataset = data.map(self.preprocess_function, batched=True)
+            tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
+            # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
+
+            return tokenized_dataset
+
         except Exception as e:
-            print(f"Error while preprocessing data: {e}")
+            print(f"Error while tokenizing data: {e}")
             raise e
         
+    def preprocess_function(self, data: Dataset, *args) -> Dataset:
+        prefix = "Summarize the following conversation:\n\n###"
+        suffix = "\n\nSummary: "
+        inputs = [prefix + input + suffix for input in data["dialogue"]]
 
-def preprocessing_data(data: DatasetDict, tokenizer, *args) -> DatasetDict:
+        max_source_length = 1024
+        max_target_length = 176
+
+        data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
+        data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+        
+        label_ignore_ids = []
+        for label in data["labels"]:
+            label_example = [l if l != 0 else -100 for l in label]
+            label_ignore_ids.append(label_example)
+
+        data["labels"] = label_ignore_ids
+
+        return data
+    
+
+def preprocessing_data(data: DatasetDict, tokenizer) -> DatasetDict:
     try:
-        tokenizing_strategy = DataTokenizingStrategy(tokenizer)
-        data_preprocess = DataPreprocessing(data, tokenizing_strategy)
-
-        tokenized_data = data_preprocess.handle_data()
+        tokenizing_data = DataTokenizing(tokenizer)
+        tokenized_data = tokenizing_data.handle_data(data)
 
         return tokenized_data
 
     except Exception as e:
         print(f"Error while pre-processing data: {e}")
         raise e
-    
-# if __name__=='__main__':
-#     checkpoint = "google/flan-t5-base"
-#     datapath = "knkarthick/dialogsum"
-#     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-#     data = ingest_data(datapath)
-#     data = preprocessing_data(data, tokenizer)
-#     print(data)
