@@ -40,7 +40,7 @@ def training_pipeline(args: argparse.Namespace):
         if (args.lora == False):
             model = load_model(args.checkpoint)
             tokenizer = model.tokenizer
-            model.get_model()
+            base_model = model.get_model()
             print("Complete loading model!")
 
         else:
@@ -72,8 +72,8 @@ def training_pipeline(args: argparse.Namespace):
 
             # add LoRA adaptor
             model.get_peft(lora_config)
-            model.base_model.print_trainable_parameters()
-            print("Complete loading LoRA! " + get_trainable_parameters(model.base_model))
+            base_model.print_trainable_parameters()
+            print("Complete loading LoRA! " + get_trainable_parameters(base_model))
 
         # Load data from datapath
         data = ingest_data(args.datapath)
@@ -128,7 +128,7 @@ def training_pipeline(args: argparse.Namespace):
             return results
 
         # Load trainer
-        trainer = Seq2SeqTrainer(model=model.base_model,
+        trainer = Seq2SeqTrainer(model=base_model,
                                args=training_args,
                                train_dataset=data["train"],
                                eval_dataset=data["validation"],

@@ -17,6 +17,7 @@ class Model:
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
+        self.base_model = None
 
     def get_model(self):
         pass
@@ -25,10 +26,7 @@ class Model:
         self.base_model = get_peft_model(self.base_model, lora_config)
     
     def prepare_quantize(self, bnb_config):
-        if "bart" in self.checkpoint:
-            self.base_model = BartModel.from_pretrained(self.checkpoint, quantization_config=bnb_config, device_map={"":0}, trust_remote_code=True)
-        if "flan" in self.checkpoint:
-            self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
+        self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
 
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
@@ -42,10 +40,10 @@ class Model:
 class BartSum(Model):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
-        self.tokenizer = BartTokenizer.from_pretrained(self.checkpoint)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        self.base_model = BartModel.from_pretrained(self.checkpoint).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 
 class FlanT5Sum(Model):
@@ -54,7 +52,7 @@ class FlanT5Sum(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        self.base_model = AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
 
 
 def load_model(checkpoint):
