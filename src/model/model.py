@@ -16,6 +16,7 @@ class Model:
     def __init__(self, checkpoint):
         self.checkpoint = checkpoint
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
         pass
@@ -31,6 +32,11 @@ class Model:
 
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
+    def generate(self, input_text, generation_config):
+        input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
+        output_ids = self.base_model.generate(input_ids, generation_config)
+        output_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        return output_text
 
 class BartSum(Model):
     def __init__(self, checkpoint):

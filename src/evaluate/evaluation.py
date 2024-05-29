@@ -12,7 +12,7 @@ import argparse
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
-from model.models import GeneralModel
+from model.model import Model
 
 
 class RougeEvaluation:
@@ -29,7 +29,9 @@ class RougeEvaluation:
         return results
     
 
-def evaluation_rouge(model: GeneralModel, data: Dataset, generation_config) -> dict:
+def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
+    model.get_model()
+
     dialogues = data["dialogue"]
 
     human_summaries = [summary for summary in data["summary"]]
@@ -42,7 +44,7 @@ def evaluation_rouge(model: GeneralModel, data: Dataset, generation_config) -> d
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
 
-        output_text = model.generate(input, generation_config)
+        output_text = model.base_model.generate(input, generation_config)
 
         model_summaries.append(output_text)
 
@@ -68,6 +70,6 @@ def evaluation_rouge(model: GeneralModel, data: Dataset, generation_config) -> d
 
 #     data = load_dataset(datapath, split="test")
 
-#     model = GeneralModel(checkpoint)
+#     model = Model(checkpoint)
 
 #     results = evaluation_rouge(model, data)

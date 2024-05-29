@@ -11,11 +11,11 @@ import argparse
 path = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 sys.path.insert(0, path)
 
-from src.model.models import GeneralModel
+from src.model.model import Model
 from src.evaluate.evaluation import evaluation_rouge
 from transformers import GenerationConfig
 
-if __name__=='__main__':
+def main():
     parser = argparse.ArgumentParser(description="Evaluation metric")
     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
@@ -41,8 +41,11 @@ if __name__=='__main__':
 
     data = load_dataset(datapath, split="test")
 
-    model = GeneralModel(checkpoint)
+    model = Model(checkpoint)
     print(f"Loaded model from: {checkpoint}")
 
-    results = evaluation_rouge(model, data)
+    results = evaluation_rouge(model, data, generation_config)
     print(results)
+
+if __name__ == "__main__":
+    main()
