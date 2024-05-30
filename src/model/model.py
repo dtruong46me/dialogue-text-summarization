@@ -32,6 +32,8 @@ class Model:
                                                                  trust_remote_code=True)
         # self.base_model.gradient_checkpointing_enable()
         self.base_model = prepare_model_for_kbit_training(self.base_model)
+        for param in self.base_model.parameters():
+            param.requires_grad = True
 
     def generate_summary(self, input_text, generation_config):
         input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
