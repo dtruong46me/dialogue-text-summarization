@@ -23,19 +23,17 @@ class Model:
         pass
 
     def get_peft(self, lora_config):
-        self.base_model = get_peft_model(self.base_model, lora_config)
+        return get_peft_model(self.base_model, lora_config)
     
     def prepare_quantize(self, bnb_config):
-        self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, 
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, 
                                                                  quantization_config=bnb_config, 
                                                                  device_map={"":0}, 
                                                                  trust_remote_code=True)
         # self.base_model.gradient_checkpointing_enable()
-        self.base_model = prepare_model_for_kbit_training(self.base_model)
-        for param in self.base_model.parameters():
-            if param.dtype in [torch.float16, torch.float32, torch.float64, torch.complex64, torch.complex128]:
-                param.requires_grad = True
-                
+        # self.base_model = prepare_model_for_kbit_training(self.base_model)
+
+
     def generate_summary(self, input_text, generation_config):
         input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
         output_ids = self.base_model.generate(input_ids, generation_config)

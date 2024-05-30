@@ -49,10 +49,12 @@ def training_pipeline(args: argparse.Namespace):
         tokenizer = model.tokenizer
 
         if (args.lora == False):
+            print("lora=Fasle, quantize=False")
             model.base_model = model.get_model()
             model.base_model.to(device)
 
         else:
+            print("Other")
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
             import torch
@@ -75,14 +77,16 @@ def training_pipeline(args: argparse.Namespace):
             )
 
             if (args.quantize == True):
-                model.prepare_quantize(bnb_config)
+                print("Quantize=True, lora=True")
+                model.base_model = model.prepare_quantize(bnb_config)
 
             if (args.quantize==False):
+                print("Quantize=False, lora=True")
                 model.base_model = model.get_model()
                 model.base_model.to(device)
 
             # add LoRA adaptor
-            model.get_peft(lora_config)
+            model.base_model = model.get_peft(lora_config)
             model.base_model.print_trainable_parameters()
             print("Complete loading LoRA! " + get_trainable_parameters(model.base_model))
 
