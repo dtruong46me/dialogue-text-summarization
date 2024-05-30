@@ -43,7 +43,7 @@ class BartSum(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, torch_type=torch.bfloat16).to(self.device)
 
 
 class FlanT5Sum(Model):
@@ -52,7 +52,7 @@ class FlanT5Sum(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, torch_type=torch.bfloat16).to(self.device)
 
 
 def load_model(checkpoint):

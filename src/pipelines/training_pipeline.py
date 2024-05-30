@@ -3,8 +3,13 @@ import sys
 import argparse
 import numpy as np
 import nltk
+
 from nltk.tokenize import sent_tokenize
-from transformers import Seq2SeqTrainer
+from transformers import (
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM,
+    Seq2SeqTrainer
+)
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -37,10 +42,15 @@ def training_pipeline(args: argparse.Namespace):
         print('\n'.join(f' + {k}={v}' for k, v in vars(args).items()))
         print("=========================================")
 
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         if (args.lora == False):
-            model = load_model(args.checkpoint)
-            tokenizer = model.tokenizer
-            base_model = model.get_model()
+            # model = load_model(args.checkpoint)
+            # tokenizer = model.tokenizer
+            # base_model = model.get_model()
+            tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint, torch_type=torch.bfloat16).to(device)
             print("Complete loading model!")
 
         else:
