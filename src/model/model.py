@@ -26,7 +26,11 @@ class Model:
         self.base_model = get_peft_model(self.base_model, lora_config)
     
     def prepare_quantize(self, bnb_config):
-        self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
+        self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, 
+                                                                 quantization_config=bnb_config, 
+                                                                 device_map={"":0}, 
+                                                                 trust_remote_code=True)
+        self.base_model.gradient_checkpoint_enable()
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
     def generate_summary(self, input_text, generation_config):

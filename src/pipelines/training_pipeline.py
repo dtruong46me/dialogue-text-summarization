@@ -45,9 +45,10 @@ def training_pipeline(args: argparse.Namespace):
         import torch
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        model = load_model(args.checkpoint)
+        tokenizer = model.tokenizer
+
         if (args.lora == False):
-            model = load_model(args.checkpoint)
-            tokenizer = model.tokenizer
             model.base_model = model.get_model()
             model.base_model.to(device)
 
@@ -73,12 +74,12 @@ def training_pipeline(args: argparse.Namespace):
                 task_type=TaskType.SEQ_2_SEQ_LM
             )
 
-            model = load_model(args.checkpoint)
-            model.base_model = model.get_model()
-            tokenizer = model.tokenizer
-
             if (args.quantize == True):
                 model.prepare_quantize(bnb_config)
+
+            if (args.quantize==False):
+                model.base_model = model.get_model()
+                model.base_model.to(device)
 
             # add LoRA adaptor
             model.get_peft(lora_config)
