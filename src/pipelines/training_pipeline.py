@@ -74,6 +74,7 @@ def training_pipeline(args: argparse.Namespace):
             )
 
             model = load_model(args.checkpoint)
+            model.base_model = model.get_model()
 
             if (args.quantize == True):
                 model.prepare_quantize(bnb_config)
