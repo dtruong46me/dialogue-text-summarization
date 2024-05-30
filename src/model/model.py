@@ -33,8 +33,9 @@ class Model:
         # self.base_model.gradient_checkpointing_enable()
         self.base_model = prepare_model_for_kbit_training(self.base_model)
         for param in self.base_model.parameters():
-            param.requires_grad = True
-
+            if param.dtype in [torch.float16, torch.float32, torch.float64, torch.complex64, torch.complex128]:
+                param.requires_grad = True
+                
     def generate_summary(self, input_text, generation_config):
         input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
         output_ids = self.base_model.generate(input_ids, generation_config)
