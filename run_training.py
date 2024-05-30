@@ -18,23 +18,17 @@ def main():
     args = parse_args()
     print(f"\033[92mLoaded argument parsers\033[00m")
 
-    checkpoint = args.checkpoint
-    datapath = args.datapath
-
     # Load token ID
     huggingface_hub_token = args.huggingface_hub_token
     wandb_token = args.wandb_token
 
-    # Setup environment
-    if huggingface_hub_token:
-        os.environ["HUGGINGFACE_TOKEN"] = huggingface_hub_token
-    
     if wandb_token:
         os.environ["WANDB_PROJECT"] = "nlp_project"
 
     # Login to Huggingface Hub and WandB
     login(token=huggingface_hub_token)
     print("\033[92mSuccessful login to Huggingface Hub\033[00m")
+    
     wandb.login(key=wandb_token)
     print("\033[92mSuccessful login to WandB\033[00m")
 

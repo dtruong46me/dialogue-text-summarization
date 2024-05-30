@@ -4,3 +4,5 @@ accelerate
 evaluate
 nltk
 rouge_score
+peft
+bitsandbytes

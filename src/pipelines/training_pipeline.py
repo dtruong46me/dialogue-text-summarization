@@ -1,49 +1,48 @@
-import logging
-
 import os
 import sys
 import argparse
 import numpy as np
 import nltk
+
 from nltk.tokenize import sent_tokenize
-from transformers import Seq2SeqTrainer
+from transformers import (
+    Seq2SeqTrainer
+)
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
 from utils import *
 
-from model.models import load_model
+# from model.models import load_model
+from model.model import load_model
 from data.preprocessing import preprocessing_data
 from data.ingest_data import ingest_data
-# from evaluate.rouge_metric import compute_metrics
 
 import evaluate
-
-def get_trainable_parameters(model):
-    """
-    Returns the number of trainable parameters in the model as a string.
-    """
-    trainable_params = 0
-    all_param = 0
-    for _, param in model.named_parameters():
-        all_param += param.numel()
-        if param.requires_grad:
-            trainable_params += param.numel()
-    return f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
 
 
 def training_pipeline(args: argparse.Namespace):
     try:
+        print("=========================================")
+        print('\n'.join(f' + {k}={v}' for k, v in vars(args).items()))
+        print("=========================================")
+
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        model = load_model(args.checkpoint)
+        tokenizer = model.tokenizer
 
         if (args.lora == False):
-            # Load model from checkpoint
-            model = load_model(args.checkpoint)
-            print("Complete loading model!")
+            print("lora=Fasle, quantize=False")
+            model.base_model = model.get_model()
+            model.base_model.to(device)
+
         else:
+            print("Other")
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
-            from model.models import FlanT5Model_LoRA
             import torch
 
             bnb_config = BitsAndBytesConfig(
@@ -55,31 +54,33 @@ def training_pipeline(args: argparse.Namespace):
 
             # Define LoRA Config 
             lora_config = LoraConfig(
-                r=8, 
-                lora_alpha=32,
-                target_modules=["q", "v"],
-                lora_dropout=0.05,
+                r=args.lora_rank, 
+                lora_alpha=args.lora_alpha,
+                target_modules=args.target_modules.split(","),
+                lora_dropout=args.lora_dropout,
                 bias="none",
                 task_type=TaskType.SEQ_2_SEQ_LM
             )
 
-            model = FlanT5Model_LoRA(args.checkpoint, bnb_config)
-
             if (args.quantize == True):
-                # quantizing the model
-                model.prepare_quantize()
+                print("Quantize=True, lora=True")
+                model.base_model = model.prepare_quantize(bnb_config)
+
+            if (args.quantize==False):
+                print("Quantize=False, lora=True")
+                model.base_model = model.get_model()
+                model.base_model.to(device)
 
             # add LoRA adaptor
-            model.get_peft(lora_config)
+            model.base_model = model.get_peft(lora_config)
             model.base_model.print_trainable_parameters()
-            print("Complete loading LoRA! " + get_trainable_parameters(model.base_model))
 
         # Load data from datapath
         data = ingest_data(args.datapath)
         print("\033[92mComplete loading dataset!\033[00m")
 
         # Pre-processing data
-        data = preprocessing_data(data, model.tokenizer)
+        data = preprocessing_data(data, tokenizer)
         print("\033[92mComplete pre-processing dataset!\033[00m")
 
         # Load training arguments
@@ -131,7 +132,7 @@ def training_pipeline(args: argparse.Namespace):
                                args=training_args,
                                train_dataset=data["train"],
                                eval_dataset=data["validation"],
-                               tokenizer=model.tokenizer,
+                               tokenizer=tokenizer,
                                compute_metrics=compute_metric)
         print("\033[92mComplete loading trainer!\033[00m")
 

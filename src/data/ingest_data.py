@@ -23,10 +23,3 @@ def ingest_data(datapath: str) -> DatasetDict:
     except Exception as e:
         print(f"Error while loading data: {e}")
         raise e
-    
-
-# if __name__=='__main__':
-#     datapath = "knkarthick/dialogsum"
-#     dataset = ingest_data(datapath)
-#     print(dataset)
-#     print(type(dataset))

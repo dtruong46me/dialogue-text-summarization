@@ -4,7 +4,7 @@ import os
 import sys
 import yaml
 
-from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, EarlyStoppingCallback, GenerationConfig
+from transformers import Seq2SeqTrainingArguments
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
 
     parser.add_argument("--output_dir", type=str, default="fine-tuned-flant5")
-    parser.add_argument("--overwrite_output_dir", type=bool, default=False)
+    parser.add_argument("--overwrite_output_dir", action="store_true")
     
     parser.add_argument("--num_train_epochs", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=4)
@@ -41,11 +41,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--report_to", type=str, default="wandb")
     parser.add_argument("--run_name", type=str, default="flan-t5-base-model")
 
-    parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
-    parser.add_argument("--load_best_model_at_end", type=bool, default=False)
+    # parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
+    # parser.add_argument("--load_best_model_at_end", action="store_true")
 
-    parser.add_argument("--sortish_sampler", type=bool, default=True)
-    parser.add_argument("--predict_with_generate", type=bool, default=True)
+    # parser.add_argument("--sortish_sampler", action="store_true")
+    parser.add_argument("--predict_with_generate", action="store_true")
 
     parser.add_argument("--min_new_tokens", type=int, default=10)
     parser.add_argument("--max_new_tokens", type=int, default=256)
@@ -53,8 +53,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--top_k", type=int, default=50)
 
-    parser.add_argument("--lora", type=bool, default=False)
-    parser.add_argument("--quantize", type=bool, default=False)
+    parser.add_argument("--lora", action="store_true")
+    parser.add_argument("--quantize", action="store_true")
+
+    parser.add_argument("--lora_rank", type=int, default=8)
+    parser.add_argument("--lora_alpha", type=int, default=16)
+    parser.add_argument("--target_modules", type=str, default="q,v")
+    parser.add_argument("--lora_dropout", type=float, default=0.05)
 
     args = parser.parse_args()
     return args
@@ -89,19 +94,19 @@ def load_training_arguments(args):
                 report_to=args.report_to,
                 run_name=args.run_name,
 
-                metric_for_best_model=args.metric_for_best_model,
-                load_best_model_at_end=args.load_best_model_at_end,
+                # metric_for_best_model=args.metric_for_best_model,
+                # load_best_model_at_end=args.load_best_model_at_end,
 
-                sortish_sampler=args.sortish_sampler,
+                # sortish_sampler=args.sortish_sampler,
                 predict_with_generate=args.predict_with_generate,
 
-                generation_config=GenerationConfig(
-                    min_new_tokens=args.min_new_tokens,
-                    max_new_tokens=args.max_new_tokens,
-                    temperature=args.temperature,
-                    top_p=args.top_p,
-                    top_k=args.top_k
-                )
+                # generation_config=GenerationConfig(
+                #     min_new_tokens=args.min_new_tokens,
+                #     max_new_tokens=args.max_new_tokens,
+                #     temperature=args.temperature,
+                #     top_p=args.top_p,
+                #     top_k=args.top_k
+                # )
             )
 
         return training_args
@@ -110,47 +115,6 @@ def load_training_arguments(args):
         print(f"Error while loading training arguments: {e}")
         raise e
 
-def load_callbacks(args) -> list:
-    try:
-        callbacks = []
-        early_stopping_callback = EarlyStoppingCallback(
-            early_stopping_patience=args.early_stopping_patience,
-            early_stopping_threshold=args.early_stopping_threshold
-        )
-        callbacks.append(early_stopping_callback)
-        return callbacks
-    
-    except Exception as e:
-        print(f"Error while loading callbacks: {e}")
-        raise e
-
-def load_trainer(model, training_args, dataset, tokenizer, args):
-    try:
-        # callbacks = load_callbacks(args)
-        # def custom_compute_metrics(eval_preds):
-        #     metrics = compute_metrics(eval_preds, tokenizer)
-
-            # wandb.log(metrics)
-
-            # return metrics
-
-        # callbacks = [WandBCallback(tokenizer)]
-
-        trainer = Seq2SeqTrainer(
-            model=model,
-            args=training_args,
-            train_dataset=dataset["train"],
-            eval_dataset=dataset["validation"],
-            tokenizer=tokenizer
-            # callbacks=callbacks,
-            # compute_metrics=custom_compute_metrics
-        )
-        
-        return trainer
-    
-    except Exception as e:
-        print(f"Error while loading trainer: {e}")
-        raise e
 
 def load_config(configpath):
     if os.path.exists(configpath):
