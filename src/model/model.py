@@ -30,7 +30,7 @@ class Model:
                                                                  quantization_config=bnb_config, 
                                                                  device_map={"":0}, 
                                                                  trust_remote_code=True)
-        self.base_model.gradient_checkpointing_enable()
+        # self.base_model.gradient_checkpointing_enable()
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
     def generate_summary(self, input_text, generation_config):
