@@ -50,7 +50,7 @@ def training_pipeline(args: argparse.Namespace):
             # tokenizer = model.tokenizer
             # base_model = model.get_model()
             tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
-            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint, torch_type=torch.bfloat16).to(device)
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint).to(device)
             print("Complete loading model!")
 
         else:
