@@ -3,13 +3,10 @@ import torch
 from transformers import (
     AutoTokenizer,
     AutoModelForSeq2SeqLM,
-    BartTokenizer,
-    BartModel
 )
 
 from peft import (
     get_peft_model,
-    prepare_model_for_kbit_training
 )
 
 class Model:

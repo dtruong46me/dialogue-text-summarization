@@ -6,8 +6,6 @@ import nltk
 
 from nltk.tokenize import sent_tokenize
 from transformers import (
-    AutoTokenizer,
-    AutoModelForSeq2SeqLM,
     Seq2SeqTrainer
 )
 
