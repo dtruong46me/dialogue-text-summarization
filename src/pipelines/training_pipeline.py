@@ -23,18 +23,6 @@ from data.ingest_data import ingest_data
 
 import evaluate
 
-def get_trainable_parameters(model):
-    """
-    Returns the number of trainable parameters in the model as a string.
-    """
-    trainable_params = 0
-    all_param = 0
-    for _, param in model.named_parameters():
-        all_param += param.numel()
-        if param.requires_grad:
-            trainable_params += param.numel()
-    return f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
-
 
 def training_pipeline(args: argparse.Namespace):
     try:
@@ -88,7 +76,6 @@ def training_pipeline(args: argparse.Namespace):
             # add LoRA adaptor
             model.base_model = model.get_peft(lora_config)
             model.base_model.print_trainable_parameters()
-            print("Complete loading LoRA! " + get_trainable_parameters(model.base_model))
 
         # Load data from datapath
         data = ingest_data(args.datapath)
