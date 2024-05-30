@@ -27,7 +27,6 @@ class Model:
     
     def prepare_quantize(self, bnb_config):
         self.base_model =  AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, quantization_config= bnb_config, device_map={"":0}, trust_remote_code=True)
-
         self.base_model = prepare_model_for_kbit_training(self.base_model)
 
     def generate_summary(self, input_text, generation_config):
@@ -43,7 +42,7 @@ class BartSum(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, torch_type=torch.bfloat16).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint)
 
 
 class FlanT5Sum(Model):
@@ -52,7 +51,7 @@ class FlanT5Sum(Model):
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
 
     def get_model(self):
-        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint, torch_type=torch.bfloat16).to(self.device)
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint)
 
 
 def load_model(checkpoint):

@@ -46,12 +46,10 @@ def training_pipeline(args: argparse.Namespace):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         if (args.lora == False):
-            # model = load_model(args.checkpoint)
-            # tokenizer = model.tokenizer
-            # base_model = model.get_model()
-            tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
-            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint).to(device)
-            print("Complete loading model!")
+            model = load_model(args.checkpoint)
+            tokenizer = model.tokenizer
+            base_model = model.get_model()
+            base_model.to(device)
 
         else:
             from peft import LoraConfig, TaskType
@@ -82,7 +80,7 @@ def training_pipeline(args: argparse.Namespace):
 
             # add LoRA adaptor
             model.get_peft(lora_config)
-            base_model.print_trainable_parameters()
+            model.base_model.print_trainable_parameters()
             print("Complete loading LoRA! " + get_trainable_parameters(base_model))
 
         # Load data from datapath
