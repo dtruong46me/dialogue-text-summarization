@@ -29,7 +29,7 @@ class RougeEvaluation:
 def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.base_model = model.get_model()
-    
+
     dialogues = data["dialogue"]
 
     human_summaries = [summary for summary in data["summary"]]
@@ -41,7 +41,8 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
 
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
-
+        
+        print(idx, end="# ")
         output_text = model.generate_summary(input, generation_config)
 
         model_summaries.append(output_text)
