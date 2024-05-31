@@ -33,9 +33,9 @@ class Model:
 
     def generate_summary(self, input_text, generation_config):
         input_ids = self.tokenizer.encode(input_text, return_tensors="pt", max_length=1024, truncation=True, padding="max_length")
-        output_ids = self.base_model.generate(input_ids, generation_config)
+        output_ids = self.base_model.generate(input_ids=input_ids, do_sample=True, generation_config=generation_config)
         output_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        print(f"\033[94mGenerated summary: {output_text}\033[00m")
+        print(f"\033[94mGenerated summary: {output_text}\n\033[00m")
         return output_text
 
 class BartSum(Model):
