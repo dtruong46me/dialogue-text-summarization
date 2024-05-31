@@ -30,6 +30,9 @@ def save_metrics_to_csv(results, resultpath, checkpoint):
 
 
 def main():
+    import torch
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     parser = argparse.ArgumentParser(description="Evaluation metric")
     parser.add_argument("--datapath", type=str, default="knkarthick/dialogsum")
     parser.add_argument("--checkpoint", type=str, default="google/flan-t5-base")
@@ -57,6 +60,8 @@ def main():
     data = load_dataset(datapath, split="test")
 
     model = load_model(checkpoint)
+    model.base_model = model.get_model()
+    model.base_model.to(device)
     print(f"Loaded model from: {checkpoint}")
 
     results = evaluation_rouge(model, data, generation_config)
