@@ -126,7 +126,7 @@ class ContrastiveLoss(nn.Module):
         return loss
     
 def compute_loss(model, inputs):
-    output = model.generate(inputs, do_sample=True)
+    output = model.generate(inputs)
     lm_loss = output.loss
 
     dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
