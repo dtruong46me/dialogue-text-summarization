@@ -4,7 +4,10 @@ import os
 import sys
 import yaml
 
-from transformers import Seq2SeqTrainingArguments
+import torch
+import torch.nn as nn
+
+from transformers import Seq2SeqTrainingArguments, GenerationConfig
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -13,7 +16,6 @@ sys.path.insert(0, path)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine tuning LLM for Dialogue Text Summarization")
-    parser.add_argument("--configpath", type=str, default=None)
     parser.add_argument("--huggingface_hub_token", type=str, default=None)
     parser.add_argument("--wandb_token", type=str, default=None)
 
@@ -67,47 +69,42 @@ def parse_args() -> argparse.Namespace:
 
 def load_training_arguments(args):
     try:
-        if args.configpath is not None:
-            config = load_config(configpath=args.configpath)
-            training_args = Seq2SeqTrainingArguments(**config["training_args"])
+        training_args = Seq2SeqTrainingArguments(
+            output_dir=args.output_dir,
+            overwrite_output_dir=args.overwrite_output_dir,
 
-        else:
-            training_args = Seq2SeqTrainingArguments(
-                output_dir=args.output_dir,
-                overwrite_output_dir=args.overwrite_output_dir,
+            num_train_epochs=args.num_train_epochs,
+            per_device_train_batch_size=args.per_device_train_batch_size,
+            per_device_eval_batch_size=args.per_device_eval_batch_size,
+            gradient_accumulation_steps=args.gradient_accumulation_steps,
+            
+            learning_rate=args.learning_rate,
+            weight_decay=args.weight_decay,
 
-                num_train_epochs=args.num_train_epochs,
-                per_device_train_batch_size=args.per_device_train_batch_size,
-                per_device_eval_batch_size=args.per_device_eval_batch_size,
-                gradient_accumulation_steps=args.gradient_accumulation_steps,
-                
-                learning_rate=args.learning_rate,
-                weight_decay=args.weight_decay,
+            evaluation_strategy=args.evaluation_strategy,
+            save_strategy=args.save_strategy,
+            
+            logging_strategy=args.logging_strategy,
+            logging_steps=args.logging_steps,
+            save_total_limit=args.save_total_limit,
+            
+            report_to=args.report_to,
+            run_name=args.run_name,
 
-                evaluation_strategy=args.evaluation_strategy,
-                save_strategy=args.save_strategy,
-                
-                logging_strategy=args.logging_strategy,
-                logging_steps=args.logging_steps,
-                save_total_limit=args.save_total_limit,
-                
-                report_to=args.report_to,
-                run_name=args.run_name,
+            # metric_for_best_model=args.metric_for_best_model,
+            # load_best_model_at_end=args.load_best_model_at_end,
 
-                # metric_for_best_model=args.metric_for_best_model,
-                # load_best_model_at_end=args.load_best_model_at_end,
+            # sortish_sampler=args.sortish_sampler,
+            predict_with_generate=args.predict_with_generate,
 
-                # sortish_sampler=args.sortish_sampler,
-                predict_with_generate=args.predict_with_generate,
-
-                # generation_config=GenerationConfig(
-                #     min_new_tokens=args.min_new_tokens,
-                #     max_new_tokens=args.max_new_tokens,
-                #     temperature=args.temperature,
-                #     top_p=args.top_p,
-                #     top_k=args.top_k
-                # )
+            generation_config=GenerationConfig(
+                min_new_tokens=args.min_new_tokens,
+                max_new_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                top_k=args.top_k
             )
+        )
 
         return training_args
     
@@ -115,12 +112,30 @@ def load_training_arguments(args):
         print(f"Error while loading training arguments: {e}")
         raise e
 
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+        self.cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
 
-def load_config(configpath):
-    if os.path.exists(configpath):
-        with open(configpath, "r") as f:
-            config = yaml.safe_load(f)
-        return config
+    def forward(self, dialgue_embeddings, pos_summary_embeddings, neg_summary_embeddings):
+        pos_sim = self.cosine_similarity(dialgue_embeddings, pos_summary_embeddings)
+        neg_sim = self.cosine_similarity(dialgue_embeddings, neg_summary_embeddings)
+        loss = torch.mean(1-pos_sim) + torch.clamp(neg_sim-self.margin, min=0.0)
+
+        return loss
     
-    else:
-        return None
+def compute_loss(model, inputs):
+    output = model.generate(inputs, do_sample=True)
+    lm_loss = output.loss
+
+    dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
+    pos_summary_embeddings = model.encoder(inputs["labels"]).last_hidden_state
+    neg_summary_embeddings = model.encoder(inputs["negative_labels"]).last_hidden_state
+
+    contrastive_loss = ContrastiveLoss(margin=1.0)(dialogue_embeddings, pos_summary_embeddings, neg_summary_embeddings)
+
+    # Combine losses
+    total_loss = lm_loss + contrastive_loss
+
+    return total_loss

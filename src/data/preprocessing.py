@@ -1,6 +1,6 @@
 
 from datasets import DatasetDict, Dataset
-
+import random
 
 class DataTokenizing:
     def __init__(self, tokenizer) -> None:
@@ -19,7 +19,7 @@ class DataTokenizing:
             print(f"Error while tokenizing data: {e}")
             raise e
         
-    def preprocess_function(self, data: Dataset, *args) -> Dataset:
+    def preprocess_function(self, data: Dataset, generate_negatievs=False) -> Dataset:
         prefix = "Summarize the following conversation:\n\n###"
         suffix = "\n\nSummary: "
         inputs = [prefix + input + suffix for input in data["dialogue"]]
@@ -31,6 +31,11 @@ class DataTokenizing:
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
         data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         
+        # Generate negative examples:
+        if generate_negatievs==True:
+            negative_summaries = self.generate_negative_examples(data["summary"])
+            data["negative_labels"] = self.tokenizer(negative_summaries, max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+
         label_ignore_ids = []
         for label in data["labels"]:
             label_example = [l if l != 0 else -100 for l in label]
@@ -39,6 +44,14 @@ class DataTokenizing:
         data["labels"] = label_ignore_ids
 
         return data
+    
+    def generate_negative_examples(self, summaries):
+        negative_summaries = []
+        for summary in summaries:
+            words = summary.split()
+            random.shuffle(words)
+            negative_summaries.append(" ".join(words))
+        return negative_summaries
     
 
 def preprocessing_data(data: DatasetDict, tokenizer) -> DatasetDict:
