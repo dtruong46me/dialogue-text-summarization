@@ -79,7 +79,7 @@ def training_pipeline(args: argparse.Namespace):
         print("\033[92mComplete loading dataset!\033[00m")
 
         # Pre-processing data
-        data = preprocessing_data(data, tokenizer)
+        data = preprocessing_data(data, tokenizer, use_contrastive_loss=args.use_contrastive_loss)
         print("\033[92mComplete pre-processing dataset!\033[00m")
 
         # Load training arguments

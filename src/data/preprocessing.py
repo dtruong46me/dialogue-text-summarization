@@ -3,10 +3,11 @@ from datasets import DatasetDict, Dataset
 import random
 
 class DataTokenizing:
-    def __init__(self, tokenizer) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False) -> None:
         self.tokenizer = tokenizer
+        self.use_contrastive_loss = use_contrastive_loss
 
-    def handle_data(self, data: DatasetDict, *args) -> DatasetDict:
+    def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
             self.tokenizer.pad_token = self.tokenizer.eos_token
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
@@ -19,7 +20,7 @@ class DataTokenizing:
             print(f"Error while tokenizing data: {e}")
             raise e
         
-    def preprocess_function(self, data: Dataset, generate_negatievs=False) -> Dataset:
+    def preprocess_function(self, data: Dataset) -> Dataset:
         prefix = "Summarize the following conversation:\n\n###"
         suffix = "\n\nSummary: "
         inputs = [prefix + input + suffix for input in data["dialogue"]]
@@ -32,7 +33,7 @@ class DataTokenizing:
         data["labels"] = self.tokenizer(data["summary"], max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         
         # Generate negative examples:
-        if generate_negatievs==True:
+        if self.use_contrastive_loss==True:
             negative_summaries = self.generate_negative_examples(data["summary"])
             data["negative_labels"] = self.tokenizer(negative_summaries, max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
 
@@ -54,9 +55,9 @@ class DataTokenizing:
         return negative_summaries
     
 
-def preprocessing_data(data: DatasetDict, tokenizer) -> DatasetDict:
+def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False) -> DatasetDict:
     try:
-        tokenizing_data = DataTokenizing(tokenizer)
+        tokenizing_data = DataTokenizing(tokenizer, use_contrastive_loss)
         tokenized_data = tokenizing_data.handle_data(data)
 
         return tokenized_data
