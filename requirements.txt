@@ -1,4 +1,5 @@
 wandb
+torch
 huggingface_hub
 accelerate
 evaluate
