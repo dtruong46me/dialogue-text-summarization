@@ -42,6 +42,10 @@ def main():
     parser.add_argument("--top_k", type=int, default=50)
 
     args = parser.parse_args()
+
+    print("=========================================")
+    print('\n'.join(f' + {k}={v}' for k, v in vars(args).items()))
+    print("=========================================")
     
     datapath = args.datapath
     checkpoint = args.checkpoint

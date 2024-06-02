@@ -6,3 +6,4 @@ nltk
 rouge_score
 peft
 bitsandbytes
+replicate

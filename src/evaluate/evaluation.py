@@ -4,6 +4,7 @@ import sys
 from datasets import Dataset
 
 import evaluate
+import torch
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -26,7 +27,8 @@ class RougeEvaluation:
     
 
 def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
-    model.get_model()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.base_model = model.get_model()
 
     dialogues = data["dialogue"]
 
@@ -39,7 +41,8 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
 
     for idx, dialogue in enumerate(dialogues):
         input = prefix + dialogue + suffix
-
+        
+        print(idx, end="# ")
         output_text = model.generate_summary(input, generation_config)
 
         model_summaries.append(output_text)

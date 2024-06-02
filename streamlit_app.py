@@ -2,6 +2,7 @@ import streamlit as st
 
 from transformers import GenerationConfig, BartModel, BartTokenizer, AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
+import time
 
 import sys, os
 
@@ -9,6 +10,7 @@ path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, path)
 
 from gen_summary import generate_summary
+
 
 st.title("Dialogue Text Summarization")
 st.caption("Natural Language Processing Project 20232")
@@ -18,14 +20,7 @@ st.write("---")
 with st.sidebar:
     checkpoint = st.selectbox("Model", options=[
         "Choose model",
-        "google/flan-t5-small",
-        "google/flan-t5-base",
-        "google/flan-t5-large",
-        "google/flan-t5-xl",
-        "google/flan-t5-xxl",
-        "facebook/bart-base",
-        "facebook/bart-large",
-        "facebook/bart-large-cnn"
+        "dtruong46me/train-bart-base"
     ])
     st.button("Model detail", use_container_width=True)
     st.write("-----")
@@ -36,7 +31,7 @@ with st.sidebar:
     top_p = st.slider("Top_p", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
 
 
-height = 260
+height = 200
 
 input_text = st.text_area("Dialogue", height=height)
 
@@ -54,18 +49,20 @@ if checkpoint=="Choose model":
     tokenizer = None
     model = None
 
-if "bart" in checkpoint:
-    tokenizer = BartTokenizer.from_pretrained(checkpoint)
-    model = BartModel.from_pretrained(checkpoint).to(device)
-
-if "flan" in checkpoint:
+if checkpoint!="Choose model":
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
 
+
+
 if st.button("Submit"):
+    st.write("---")
+    st.write("## Summary")
+
     if checkpoint=="Choose model":
         st.error("Please selece a model!")
+
     else:
-        generated_text = generate_summary(model, input_text, generation_config, tokenizer)
-        st.write("Summary")
-        st.success(generated_text)
+        if input_text=="":
+            st.error("Please enter a dialogue!")
+        st.write_stream(generate_summary(model, input_text, generation_config, tokenizer))
