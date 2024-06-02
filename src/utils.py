@@ -63,6 +63,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target_modules", type=str, default="q,v")
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
+    parser.add_argument("--use_contrastive_loss", action="store_true")
+
     args = parser.parse_args()
     return args
 
