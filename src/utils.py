@@ -132,7 +132,7 @@ class ContrastiveLoss(nn.Module):
         return loss
 
 class ContrastiveLearningTrainer(Trainer):
-    def compute_loss(model, inputs):
+    def compute_loss(model, inputs, return_outputs=False):
         output = model(**inputs)
         lm_loss = output.loss
 
@@ -145,4 +145,4 @@ class ContrastiveLearningTrainer(Trainer):
         # Combine losses
         total_loss = lm_loss + contrastive_loss
 
-        return total_loss
+        return (total_loss, output) if return_outputs else total_loss
