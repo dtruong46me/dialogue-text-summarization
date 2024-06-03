@@ -10,7 +10,7 @@ import torch.nn as nn
 from transformers import (
     Seq2SeqTrainingArguments, 
     GenerationConfig,
-    Seq2SeqTrainer
+    Trainer
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -101,7 +101,7 @@ def load_training_arguments(args):
             # load_best_model_at_end=args.load_best_model_at_end,
 
             # sortish_sampler=args.sortish_sampler,
-            predict_with_generate=args.predict_with_generate,
+            predict_with_generate=args.predict_with_generate
 
             # generation_config=GenerationConfig(
             #     min_new_tokens=args.min_new_tokens,
@@ -131,7 +131,7 @@ class ContrastiveLoss(nn.Module):
 
         return loss
 
-class ContrastiveLearningTrainer(Seq2SeqTrainer):
+class ContrastiveLearningTrainer(Trainer):
     def compute_loss(model, inputs):
         output = model(**inputs)
         lm_loss = output.loss
