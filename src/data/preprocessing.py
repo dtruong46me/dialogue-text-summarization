@@ -36,6 +36,7 @@ class DataTokenizing:
         if self.use_contrastive_loss==True:
             negative_summaries = self.generate_negative_examples(data["summary"])
             data["negative_labels"] = self.tokenizer(negative_summaries, max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
+            print("\033[92mComplete generate negative examples!\033[00m")
 
         label_ignore_ids = []
         for label in data["labels"]:

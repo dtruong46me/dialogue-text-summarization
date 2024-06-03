@@ -9,8 +9,7 @@ import torch.nn as nn
 
 from transformers import (
     Seq2SeqTrainingArguments, 
-    GenerationConfig,
-    Trainer
+    Seq2SeqTrainer
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -47,10 +46,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--report_to", type=str, default="wandb")
     parser.add_argument("--run_name", type=str, default="flan-t5-base-model")
 
-    # parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
-    # parser.add_argument("--load_best_model_at_end", action="store_true")
-
-    # parser.add_argument("--sortish_sampler", action="store_true")
     parser.add_argument("--predict_with_generate", action="store_true")
 
     parser.add_argument("--min_new_tokens", type=int, default=10)
@@ -97,19 +92,7 @@ def load_training_arguments(args):
             report_to=args.report_to,
             run_name=args.run_name,
 
-            # metric_for_best_model=args.metric_for_best_model,
-            # load_best_model_at_end=args.load_best_model_at_end,
-
-            # sortish_sampler=args.sortish_sampler,
             predict_with_generate=args.predict_with_generate
-
-            # generation_config=GenerationConfig(
-            #     min_new_tokens=args.min_new_tokens,
-            #     max_new_tokens=args.max_new_tokens,
-            #     temperature=args.temperature,
-            #     top_p=args.top_p,
-            #     top_k=args.top_k
-            # )
         )
 
         return training_args
@@ -131,9 +114,9 @@ class ContrastiveLoss(nn.Module):
 
         return loss
 
-class ContrastiveLearningTrainer(Trainer):
+class ContrastiveLearningTrainer(Seq2SeqTrainer):
     def compute_loss(model, inputs, return_outputs=False):
-        output = model(**inputs)
+        output = model.generate(inputs)
         lm_loss = output.loss
 
         dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state

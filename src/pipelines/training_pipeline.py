@@ -141,6 +141,7 @@ def training_pipeline(args: argparse.Namespace):
                                 eval_dataset=data["validation"],
                                 tokenizer=tokenizer,
                                 compute_metrics=compute_metric)
+        
         print("\033[92mComplete loading trainer!\033[00m")
 
         # Train model
