@@ -133,7 +133,7 @@ class ContrastiveLoss(nn.Module):
 
 class ContrastiveLearningTrainer(Trainer):
     def compute_loss(model, inputs, return_outputs=False):
-        output = model(**inputs)
+        output = model.generate(inputs)
         lm_loss = output.loss
 
         dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
