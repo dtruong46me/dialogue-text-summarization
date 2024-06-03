@@ -128,12 +128,11 @@ def training_pipeline(args: argparse.Namespace):
         
         # Load trainer
         if args.use_contrastive_loss==True:
-            trainer = Seq2SeqTrainer(model=model.base_model,
+            trainer = ContrastiveLearningTrainer(model=model.base_model,
                                      train_dataset=data["train"],
                                      eval_dataset=data["validation"],
                                      tokenizer=tokenizer,
-                                     compute_metrics=compute_metric,
-                                     compute_loss=compute_loss)
+                                     compute_metrics=compute_metric)
 
         if args.use_contrastive_loss==False:
             trainer = Seq2SeqTrainer(model=model.base_model,

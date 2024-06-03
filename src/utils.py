@@ -7,7 +7,11 @@ import yaml
 import torch
 import torch.nn as nn
 
-from transformers import Seq2SeqTrainingArguments, GenerationConfig
+from transformers import (
+    Seq2SeqTrainingArguments, 
+    GenerationConfig,
+    Seq2SeqTrainer
+)
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -126,18 +130,19 @@ class ContrastiveLoss(nn.Module):
         loss = torch.mean(1-pos_sim) + torch.clamp(neg_sim-self.margin, min=0.0)
 
         return loss
-    
-def compute_loss(model, inputs):
-    output = model.generate(inputs)
-    lm_loss = output.loss
 
-    dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
-    pos_summary_embeddings = model.encoder(inputs["labels"]).last_hidden_state
-    neg_summary_embeddings = model.encoder(inputs["negative_labels"]).last_hidden_state
+class ContrastiveLearningTrainer(Seq2SeqTrainer):
+    def compute_loss(model, inputs):
+        output = model.generate(inputs)
+        lm_loss = output.loss
 
-    contrastive_loss = ContrastiveLoss(margin=1.0)(dialogue_embeddings, pos_summary_embeddings, neg_summary_embeddings)
+        dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
+        pos_summary_embeddings = model.encoder(inputs["labels"]).last_hidden_state
+        neg_summary_embeddings = model.encoder(inputs["negative_labels"]).last_hidden_state
 
-    # Combine losses
-    total_loss = lm_loss + contrastive_loss
+        contrastive_loss = ContrastiveLoss(margin=1.0)(dialogue_embeddings, pos_summary_embeddings, neg_summary_embeddings)
 
-    return total_loss
+        # Combine losses
+        total_loss = lm_loss + contrastive_loss
+
+        return total_loss
