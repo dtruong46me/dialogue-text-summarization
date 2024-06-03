@@ -8,4 +8,4 @@ replicate
 streamlit
 torch
 transformers
-wandb2
+wandb
