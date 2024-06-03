@@ -33,7 +33,7 @@ def training_pipeline(args: argparse.Namespace):
 
         model = load_model(args.checkpoint)
         tokenizer = model.tokenizer
-
+        
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
             model.base_model = model.get_model()

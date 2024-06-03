@@ -9,7 +9,12 @@ import torch.nn as nn
 
 from transformers import (
     Seq2SeqTrainingArguments, 
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
+)
+
+from trl import (
+    PPOTrainer,
+    PPOConfig
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -63,6 +68,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
     parser.add_argument("--use_contrastive_loss", action="store_true")
+    parser.add_argument("--use_rl", action="store_true")
+    parser.add_argument("--reward_model_checkpoint", type=str, default="facebook/bart-large-mnli")
 
     args = parser.parse_args()
     return args
@@ -129,3 +136,68 @@ class ContrastiveLearningTrainer(Seq2SeqTrainer):
         total_loss = lm_loss + contrastive_loss
 
         return (total_loss, output) if return_outputs else total_loss
+
+
+# import torch.nn.functional as F
+
+# class RLTrainer(PPOTrainer):
+#     # Other methods ...
+
+#     def ppo_loss(self, model, inputs, rewards):
+#         logits = model(inputs['input_ids'], attention_mask=inputs['attention_mask'], labels=inputs['labels']).logits
+
+#         # Compute the advantage
+#         advantage = rewards - rewards.mean()
+        
+#         # Compute the log probabilities
+#         log_probs = F.log_softmax(logits, dim=-1)
+        
+#         # Compute the policy loss
+#         policy_loss = -(advantage * log_probs).mean()
+        
+#         # Compute the value loss
+#         value_loss = F.mse_loss(logits, rewards)
+        
+#         # Compute the entropy bonus
+#         entropy_bonus = -(log_probs * torch.exp(log_probs)).mean()
+        
+#         # Combine losses
+#         loss = policy_loss + 0.5 * value_loss - 0.01 * entropy_bonus
+        
+#         return loss
+    
+
+
+# class RLTrainer(PPOTrainer):
+#     def __init__(self, model, args, train_dataset, eval_dataset, tokenizer, compute_metrics=None):
+#         super().__init__(model, args, train_dataset, eval_dataset, tokenizer, compute_metrics)
+#         self.tokenizer = tokenizer
+#         self.model = model
+#         self.compute_metrics = compute_metrics
+
+#     def compute_loss(self, model, inputs, return_outputs=False):
+#         # Generate outputs using the model
+#         outputs = model.generate(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask'])
+        
+#         # Compute reward (example: using ROUGE score)
+#         rewards = self.compute_rewards(inputs['labels'], outputs)
+        
+#         # Compute PPO loss
+#         loss = self.ppo_loss(model, inputs, rewards)
+        
+#         return (loss, outputs) if return_outputs else loss
+
+#     def compute_rewards(self, labels, outputs):
+#         decoded_preds = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+#         decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+#         decoded_preds, decoded_labels = self.postprocess_text(decoded_preds, decoded_labels)
+
+#         rouge_results = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+#         rewards = {k: round(v * 100, 4) for k, v in rouge_results.items()}
+
+#         return rewards
+
+#     def ppo_loss(self, model, inputs, rewards):
+#         # Implement PPO loss calculation
+#         pass
