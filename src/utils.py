@@ -12,11 +12,6 @@ from transformers import (
     Seq2SeqTrainer,
 )
 
-from trl import (
-    PPOTrainer,
-    PPOConfig
-)
-
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
