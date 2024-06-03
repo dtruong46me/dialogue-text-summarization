@@ -103,13 +103,13 @@ def load_training_arguments(args):
             # sortish_sampler=args.sortish_sampler,
             predict_with_generate=args.predict_with_generate,
 
-            generation_config=GenerationConfig(
-                min_new_tokens=args.min_new_tokens,
-                max_new_tokens=args.max_new_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                top_k=args.top_k
-            )
+            # generation_config=GenerationConfig(
+            #     min_new_tokens=args.min_new_tokens,
+            #     max_new_tokens=args.max_new_tokens,
+            #     temperature=args.temperature,
+            #     top_p=args.top_p,
+            #     top_k=args.top_k
+            # )
         )
 
         return training_args
@@ -133,7 +133,7 @@ class ContrastiveLoss(nn.Module):
 
 class ContrastiveLearningTrainer(Seq2SeqTrainer):
     def compute_loss(model, inputs):
-        output = model.generate(inputs)
+        output = model(**inputs)
         lm_loss = output.loss
 
         dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
