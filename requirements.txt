@@ -7,6 +7,6 @@ peft
 replicate
 streamlit
 torch
-transformers
+transformers==4.36.1
 wandb
 evaluate
