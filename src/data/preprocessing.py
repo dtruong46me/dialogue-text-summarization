@@ -1,6 +1,7 @@
 
 from datasets import DatasetDict, Dataset
 import random
+from bert_score import BERTScorer
 
 from transformers import (
     T5Tokenizer,
@@ -12,6 +13,7 @@ class DialogSumDataset:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
         self.create_qds = create_qds
+        self.score = BERTScorer(lang="en", rescale_with_baseline=True)
 
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
@@ -36,10 +38,10 @@ class DialogSumDataset:
 
             for dialogue, summary in zip(data["dialogue"], data["summary"]):
                 queries = self.generate_queries(model, tokenizer, dialogue, summary, num_queries=5)
-                queries = self.filter_queries(queries)
+                queries = self.text_based_filtering(queries)
 
                 for query in queries:
-                    inputs.append(f"Query: {query} ###\nDialogue: {dialogue}")
+                    inputs.append(f"###Instruction: {query} ###Input: {dialogue}")
                     targets.append(summary)
         
         if self.create_qds==False:
@@ -79,15 +81,26 @@ class DialogSumDataset:
         return negative_summaries
 
     def generate_queries(self, model, tokenizer, summary, num_queries):
-        input_text = "Generate question: " + summary
+        input_text = "Generate an answerable and specific question based on the following context:. ###\nContext: " + summary
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
         outputs = model.generate(input_ids, max_length=64, num_return_sequences=num_queries, do_sample=True)
         queries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return queries
     
-    def filter_queries(queries):
-        filtered_queries = [query for query in queries if "?" in queries and len(query.split()>3)]
-        return list(set(filtered_queries))
+    def text_based_filtering(self, model, tokenizer, query, summary):
+        input_text = "Can we get an answer from the context, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
+        input_ids = tokenizer(input_text, return_tensors="pt").input_ids
+        outputs = model.generate(input_ids, max_length=2, num_return_sequences=1)
+        outputs = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        return outputs
+    
+    def semantic_filtering(self, model, tokenizer, query, summary):
+        input_text = "Is the question fully answerable from the context without any guessing, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
+        input_ids = tokenizer(input_text, return_tensors="pt").input_ids
+        outputs = model.generate(input_ids, max_length=2, num_return_sequences=1)
+        outputs = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        return outputs
+
 
 def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False) -> DatasetDict:
     try:

@@ -11,3 +11,4 @@ transformers==4.36.1
 wandb
 evaluate
 rouge_score
+bert_score
