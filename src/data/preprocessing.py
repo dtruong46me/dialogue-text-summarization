@@ -9,12 +9,10 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
-        self.generate_qds = generate_qds
-        self.push_to_hf = push_to_hf
-
+        
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -30,70 +28,15 @@ class DialogSumDataset:
         except Exception as e:
             print(f"\033[31m\nError while tokenizing data: {e}\033[00m")
             raise e
-        
+
     def preprocess_function(self, data: Dataset) -> Dataset:
         ## Create Query-Dialogue-Summary Instruction Dataset
-        if self.generate_qds==True:
-            scorer = BERTScorer(lang="en", rescale_with_baseline=True)
-            
-            inputs, targets = [], []
-            
-            checkpoint = "google/flan-t5-large"
-            tokenizer = T5Tokenizer.from_pretrained(checkpoint)
-            model = T5ForConditionalGeneration.from_pretrained(checkpoint)
+        prefix = "Summarize the following conversation:\n\n###"
+        suffix = "\n\nSummary: "
+        inputs = [prefix + input + suffix for input in data["dialogue"]]
+        targets = data["summary"]
 
-            for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                answerable_queries = []
-
-                while len(answerable_queries) < 1:
-                    queries = self.generate_queries(model, tokenizer, summary, num_queries=5)
-
-                    for query in queries:
-                        ## Text based filtering
-                        output = self.text_based_filtering(model, tokenizer, query, summary)
-                        if "yes" in output.lower():
-                            answerable_queries.append(query)
-
-                n = len(answerable_queries)
-                print("Length of answerable queries:", n, end="  ###  ")
-
-                if n == 1:
-                    inputs.append(f"###Instruction: {answerable_queries[0]} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
-                    targets.append(summary)
-
-                if n > 1:
-                    filtered_queries = []
-                    scores = [[0.0]*n for _ in range(n)]
-
-                    for i in range(n):
-                        for j in range(n):
-                            if i > j:
-                                scores[i][j] = self.semantic_filtering(scorer, answerable_queries[i], answerable_queries[j])
-                    
-                    keep_indices = set(range(n))
-                    for i in range(n):
-                        for j in range(n):
-                            if scores[i][j] > 0.7 and i > j:
-                                keep_indices.discard(j)
-                    
-                    for i in sorted(keep_indices):
-                        filtered_queries.append(answerable_queries[i])
-                    
-                    print("Length of filtered queries:", len(filtered_queries), end="  ###  ")
-
-                    for query in filtered_queries:
-                        inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
-                        targets.append(summary)
-                    
-                print("Length of inputs:", len(inputs))
-        
-        if self.generate_qds==False:
-            prefix = "Summarize the following conversation:\n\n###"
-            suffix = "\n\nSummary: "
-            inputs = [prefix + input + suffix for input in data["dialogue"]]
-            targets = data["summary"]
-
-        max_source_length = 1124
+        max_source_length = 1024
         max_target_length = 176
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids

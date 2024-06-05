@@ -2,7 +2,6 @@ import argparse
 
 import os
 import sys
-import yaml
 
 import torch
 import torch.nn as nn
@@ -63,8 +62,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
     parser.add_argument("--use_contrastive_loss", action="store_true")
-    parser.add_argument("--generate_qds", action="store_true")
-    parser.add_argument("--push_to_hf", action="store_true")
 
     args = parser.parse_args()
     return args
