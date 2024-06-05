@@ -9,9 +9,10 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False, only_tokenize=False) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
+        self.only_tokenize = only_tokenize
         
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
@@ -30,11 +31,16 @@ class DialogSumDataset:
             raise e
 
     def preprocess_function(self, data: Dataset) -> Dataset:
-        ## Create Query-Dialogue-Summary Instruction Dataset
-        prefix = "Summarize the following conversation:\n\n###"
-        suffix = "\n\nSummary: "
-        inputs = [prefix + input + suffix for input in data["dialogue"]]
-        targets = data["summary"]
+        ###
+        if self.only_tokenize == False:
+            prefix = "Summarize the following conversation:\n\n###"
+            suffix = "\n\nSummary: "
+            inputs = [prefix + input + suffix for input in data["dialogue"]]
+            targets = data["summary"]
+        
+        if self.only_tokenize == True:
+            inputs = [""]
+            targets = data["summary"]
 
         max_source_length = 1024
         max_target_length = 176
@@ -85,9 +91,9 @@ class DialogSumDataset:
         return score
 
 
-def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> DatasetDict:
+def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, only_tokenize=False) -> DatasetDict:
     try:
-        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, generate_qds, push_to_hf)
+        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, only_tokenize)
         tokenized_data = dataset_ds.handle_data(data)
 
         return tokenized_data
