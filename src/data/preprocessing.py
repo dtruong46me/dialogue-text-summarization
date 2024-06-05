@@ -80,6 +80,7 @@ class DialogSumDataset:
                         inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
                         targets.append(summary)
                     
+                print("Length of inputs:", len(inputs))
         
         if self.generate_qds==False:
             prefix = "Summarize the following conversation:\n\n###"
@@ -87,7 +88,7 @@ class DialogSumDataset:
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
 
-        max_source_length = 1024
+        max_source_length = 1124
         max_target_length = 176
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
