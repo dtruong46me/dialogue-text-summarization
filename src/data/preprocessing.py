@@ -13,7 +13,6 @@ class DialogSumDataset:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
         self.create_qds = create_qds
-        self.score = BERTScorer(lang="en", rescale_with_baseline=True)
 
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
@@ -29,7 +28,10 @@ class DialogSumDataset:
             raise e
         
     def preprocess_function(self, data: Dataset) -> Dataset:
+        ## Create Query-Dialogue-Summary Instruction Dataset
         if self.create_qds==True:
+            scorer = BERTScorer(lang="en", rescale_with_baseline=True)
+            
             inputs, targets = [], []
             
             checkpoint = "google/flan-t5-large"
@@ -37,12 +39,43 @@ class DialogSumDataset:
             model = T5ForConditionalGeneration.from_pretrained(checkpoint)
 
             for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                queries = self.generate_queries(model, tokenizer, dialogue, summary, num_queries=5)
-                queries = self.text_based_filtering(queries)
+                queries = self.generate_queries(model, tokenizer, dialogue, summary, num_queries=6)
 
+                answerable_queries = []
                 for query in queries:
-                    inputs.append(f"###Instruction: {query} ###Input: {dialogue}")
+                    ## Text based filtering
+                    output = self.text_based_filtering(model, tokenizer, query, dialogue)
+                    if "yes" in output.lower():
+                        answerable_queries.append(query)
+
+                n = len(answerable_queries)
+
+                if n == 1:
+                    inputs.append(f"###Instruction: {answerable_queries[0]} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
                     targets.append(summary)
+
+                if n > 1:
+                    filtered_queries = []
+                    scores = [[0.0]*n for _ in range(n)]
+
+                    for i in range(n):
+                        for j in range(n):
+                            if i > j:
+                                scores[i][j] = self.semantic_filtering(scorer, answerable_queries[i], answerable_queries[j])
+                    
+                    keep_indices = set(range(n))
+                    for i in range(n):
+                        for j in range(n):
+                            if scores[i][j] > 0.7:
+                                keep_indices.discard(j)
+                    
+                    for i in sorted(keep_indices):
+                        filtered_queries.append(answerable_queries[i])
+
+                    for query in filtered_queries:
+                        inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
+                        targets.append(summary)
+                    
         
         if self.create_qds==False:
             prefix = "Summarize the following conversation:\n\n###"
@@ -84,22 +117,19 @@ class DialogSumDataset:
         input_text = "Generate an answerable and specific question based on the following context:. ###\nContext: " + summary
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
         outputs = model.generate(input_ids, max_length=64, num_return_sequences=num_queries, do_sample=True)
-        queries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        queries = [tokenizer.decode(outputs, skip_special_tokens=True) for output in outputs]
         return queries
     
     def text_based_filtering(self, model, tokenizer, query, summary):
-        input_text = "Can we get an answer from the context, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
-        input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-        outputs = model.generate(input_ids, max_length=2, num_return_sequences=1)
-        outputs = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
-        return outputs
-    
-    def semantic_filtering(self, model, tokenizer, query, summary):
         input_text = "Is the question fully answerable from the context without any guessing, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-        outputs = model.generate(input_ids, max_length=2, num_return_sequences=1)
-        outputs = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
-        return outputs
+        output_text = model.generate(input_ids, num_return_sequences=1)
+        output = tokenizer.decode(output_text, skip_special_tokens=True)
+        return output
+    
+    def semantic_filtering(self, scorer, query1, query2):
+        score = scorer.score([query1], [query2])[0]
+        return score
 
 
 def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False) -> DatasetDict:
