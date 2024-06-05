@@ -55,7 +55,7 @@ class DialogSumDataset:
                             answerable_queries.append(query)
 
                 n = len(answerable_queries)
-                print("Length of answerable queries: ", n, end="###")
+                print("Length of answerable queries:", n, end="  ###  ")
 
                 if n == 1:
                     inputs.append(f"###Instruction: {answerable_queries[0]} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
@@ -79,7 +79,7 @@ class DialogSumDataset:
                     for i in sorted(keep_indices):
                         filtered_queries.append(answerable_queries[i])
                     
-                    print("Length of filtered queries: ", len(filtered_queries), end="###")
+                    print("Length of filtered queries:", len(filtered_queries), end="  ###  ")
 
                     for query in filtered_queries:
                         inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
