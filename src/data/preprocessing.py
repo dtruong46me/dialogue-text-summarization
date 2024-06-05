@@ -43,16 +43,19 @@ class DialogSumDataset:
             model = T5ForConditionalGeneration.from_pretrained(checkpoint)
 
             for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                queries = self.generate_queries(model, tokenizer, summary, num_queries=6)
-
                 answerable_queries = []
-                for query in queries:
-                    ## Text based filtering
-                    output = self.text_based_filtering(model, tokenizer, query, summary)
-                    if "yes" in output.lower():
-                        answerable_queries.append(query)
+
+                while len(answerable_queries) < 1:
+                    queries = self.generate_queries(model, tokenizer, summary, num_queries=5)
+
+                    for query in queries:
+                        ## Text based filtering
+                        output = self.text_based_filtering(model, tokenizer, query, summary)
+                        if "yes" in output.lower():
+                            answerable_queries.append(query)
 
                 n = len(answerable_queries)
+                print("Length of answerable queries: ", n, end="###")
 
                 if n == 1:
                     inputs.append(f"###Instruction: {answerable_queries[0]} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
@@ -75,6 +78,8 @@ class DialogSumDataset:
                     
                     for i in sorted(keep_indices):
                         filtered_queries.append(answerable_queries[i])
+                    
+                    print("Length of filtered queries: ", len(filtered_queries), end="###")
 
                     for query in filtered_queries:
                         inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
