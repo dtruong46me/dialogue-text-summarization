@@ -43,7 +43,7 @@ class DialogSumDataset:
             model = T5ForConditionalGeneration.from_pretrained(checkpoint)
 
             for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                queries = self.generate_queries(model, tokenizer, dialogue, summary, num_queries=6)
+                queries = self.generate_queries(model, tokenizer, dialogue, summary, 6)
 
                 answerable_queries = []
                 for query in queries:
