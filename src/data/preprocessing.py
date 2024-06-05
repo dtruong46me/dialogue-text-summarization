@@ -28,7 +28,7 @@ class DialogSumDataset:
             return tokenized_dataset
 
         except Exception as e:
-            print(f"Error while tokenizing data: {e}")
+            print(f"\033[31m\nError while tokenizing data: {e}\033[00m")
             raise e
         
     def preprocess_function(self, data: Dataset) -> Dataset:
@@ -48,7 +48,7 @@ class DialogSumDataset:
                 answerable_queries = []
                 for query in queries:
                     ## Text based filtering
-                    output = self.text_based_filtering(model, tokenizer, query, dialogue)
+                    output = self.text_based_filtering(model, tokenizer, query, summary)
                     if "yes" in output.lower():
                         answerable_queries.append(query)
 
@@ -127,9 +127,9 @@ class DialogSumDataset:
     def text_based_filtering(self, model, tokenizer, query, summary):
         input_text = "Is the question fully answerable from the context without any guessing, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-        output_text = model.generate(input_ids, num_return_sequences=1)
-        output = tokenizer.decode(output_text, skip_special_tokens=True)
-        return output
+        output_ids = model.generate(input_ids, num_return_sequences=1)
+        output_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        return output_text
     
     def semantic_filtering(self, scorer, query1, query2):
         score = scorer.score([query1], [query2])[0]
