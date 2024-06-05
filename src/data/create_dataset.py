@@ -70,7 +70,7 @@ def create_qds_triplet(datapath, split, start_index, end_index) -> Dataset:
             for i in range(n):
                 for j in range(n):
                     if i > j:
-                        scores[i][j] = qds_triplet.semantic_filtering(scorer, answerable_queries[i], answerable_queries[j])
+                        scores[i][j] = dsp.semantic_filtering(scorer, answerable_queries[i], answerable_queries[j])
             
             keep_indices = set(range(n))
             for i in range(n):
