@@ -9,18 +9,22 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False, create_qds=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False, create_qds=False, push_to_hf=False) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
         self.create_qds = create_qds
+        self.push_to_hf = push_to_hf
 
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
             self.tokenizer.pad_token = self.tokenizer.eos_token
             tokenized_dataset = data.map(self.preprocess_function, batched=True)
             tokenized_dataset = tokenized_dataset.remove_columns([key for key in data["train"][0].keys()])
-            # tokenized_dataset = tokenized_dataset.filter(lambda example, index: index%100==0, with_indices=True)
 
+            print("+++++++++++++++++++")
+            print(tokenized_dataset)
+            print("+++++++++++++++++++")
+            
             return tokenized_dataset
 
         except Exception as e:
@@ -66,7 +70,7 @@ class DialogSumDataset:
                     keep_indices = set(range(n))
                     for i in range(n):
                         for j in range(n):
-                            if scores[i][j] > 0.7:
+                            if scores[i][j] > 0.7 and i > j:
                                 keep_indices.discard(j)
                     
                     for i in sorted(keep_indices):
