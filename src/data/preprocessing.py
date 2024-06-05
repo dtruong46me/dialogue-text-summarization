@@ -121,7 +121,7 @@ class DialogSumDataset:
         input_text = "Generate an answerable and specific question based on the following context:. ###\nContext: " + summary
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
         outputs = model.generate(input_ids, max_length=64, num_return_sequences=num_queries, do_sample=True)
-        queries = [tokenizer.decode(outputs, skip_special_tokens=True) for output in outputs]
+        queries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return queries
     
     def text_based_filtering(self, model, tokenizer, query, summary):
