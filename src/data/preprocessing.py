@@ -9,10 +9,10 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False, only_tokenize=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False, tokenizing_strategy=1) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
-        self.only_tokenize = only_tokenize
+        self.tokenizing_strategy = tokenizing_strategy
         
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
@@ -32,15 +32,22 @@ class DialogSumDataset:
 
     def preprocess_function(self, data: Dataset) -> Dataset:
         ###
-        if self.only_tokenize == False:
+        if self.tokenizing_strategy==1:
             prefix = "Summarize the following conversation:\n\n###"
             suffix = "\n\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
         
-        if self.only_tokenize == True:
-            inputs = [""]
+        # Use for binwang/InstructDS_datasets
+        if self.tokenizing_strategy==2:
+            prefix = ""
             targets = data["summary"]
+        
+        if self.tokenizing_strategy==3:
+            pass
+
+        if self.tokenizing_strategy==4:
+            pass
 
         max_source_length = 1024
         max_target_length = 176
@@ -91,9 +98,9 @@ class DialogSumDataset:
         return score
 
 
-def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, only_tokenize=False) -> DatasetDict:
+def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, tokenizing_strategy=False) -> DatasetDict:
     try:
-        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, only_tokenize)
+        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, tokenizing_strategy)
         tokenized_data = dataset_ds.handle_data(data)
 
         return tokenized_data

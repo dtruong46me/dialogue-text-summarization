@@ -11,8 +11,6 @@ from transformers import (
     AutoTokenizer
 )
 
-import torch
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -33,7 +31,7 @@ def create_qds_triplet(datapath, split, start_index, end_index) -> Dataset:
 
     CHECKPOINT = "google/flan-t5-large"
     tokenizer = T5Tokenizer.from_pretrained(CHECKPOINT)
-    model = T5ForConditionalGeneration.from_pretrained(CHECKPOINT).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    model = T5ForConditionalGeneration.from_pretrained(CHECKPOINT)
 
     qds_triplet = {
         "query": [],

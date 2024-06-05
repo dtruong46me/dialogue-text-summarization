@@ -62,7 +62,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
     parser.add_argument("--use_contrastive_loss", action="store_true")
-    parser.add_argument("--only_tokenizing", action="store_true")
+    parser.add_argument("--tokenizing_strategy", type=int, default=1)
 
     args = parser.parse_args()
     return args
