@@ -33,14 +33,13 @@ def training_pipeline(args: argparse.Namespace):
 
         model = load_model(args.checkpoint)
         tokenizer = model.tokenizer
-
+        
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
             model.base_model = model.get_model()
             model.base_model.to(device)
 
         else:
-            print("Other")
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
             import torch
@@ -80,7 +79,7 @@ def training_pipeline(args: argparse.Namespace):
         print("\033[92mComplete loading dataset!\033[00m")
 
         # Pre-processing data
-        data = preprocessing_data(data, tokenizer)
+        data = preprocessing_data(data, tokenizer, use_contrastive_loss=args.use_contrastive_loss, generate_qds=args.generate_qds, push_to_hf=args.push_to_hf)
         print("\033[92mComplete pre-processing dataset!\033[00m")
 
         # Load training arguments
@@ -126,14 +125,23 @@ def training_pipeline(args: argparse.Namespace):
             }
 
             return results
-
+        
         # Load trainer
-        trainer = Seq2SeqTrainer(model=model.base_model,
-                               args=training_args,
-                               train_dataset=data["train"],
-                               eval_dataset=data["validation"],
-                               tokenizer=tokenizer,
-                               compute_metrics=compute_metric)
+        if args.use_contrastive_loss==True:
+            trainer = ContrastiveLearningTrainer(model=model.base_model,
+                                     train_dataset=data["train"],
+                                     eval_dataset=data["validation"],
+                                     tokenizer=tokenizer,
+                                     compute_metrics=compute_metric)
+
+        if args.use_contrastive_loss==False:
+            trainer = Seq2SeqTrainer(model=model.base_model,
+                                args=training_args,
+                                train_dataset=data["train"],
+                                eval_dataset=data["validation"],
+                                tokenizer=tokenizer,
+                                compute_metrics=compute_metric)
+        
         print("\033[92mComplete loading trainer!\033[00m")
 
         # Train model

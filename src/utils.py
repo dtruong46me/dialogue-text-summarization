@@ -4,7 +4,13 @@ import os
 import sys
 import yaml
 
-from transformers import Seq2SeqTrainingArguments
+import torch
+import torch.nn as nn
+
+from transformers import (
+    Seq2SeqTrainingArguments, 
+    Seq2SeqTrainer,
+)
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -13,7 +19,6 @@ sys.path.insert(0, path)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine tuning LLM for Dialogue Text Summarization")
-    parser.add_argument("--configpath", type=str, default=None)
     parser.add_argument("--huggingface_hub_token", type=str, default=None)
     parser.add_argument("--wandb_token", type=str, default=None)
 
@@ -41,10 +46,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--report_to", type=str, default="wandb")
     parser.add_argument("--run_name", type=str, default="flan-t5-base-model")
 
-    # parser.add_argument("--metric_for_best_model", type=str, default="eval_loss")
-    # parser.add_argument("--load_best_model_at_end", action="store_true")
-
-    # parser.add_argument("--sortish_sampler", action="store_true")
     parser.add_argument("--predict_with_generate", action="store_true")
 
     parser.add_argument("--min_new_tokens", type=int, default=10)
@@ -61,53 +62,40 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target_modules", type=str, default="q,v")
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
+    parser.add_argument("--use_contrastive_loss", action="store_true")
+    parser.add_argument("--generate_qds", action="store_true")
+    parser.add_argument("--push_to_hf", action="store_true")
+
     args = parser.parse_args()
     return args
 
 
 def load_training_arguments(args):
     try:
-        if args.configpath is not None:
-            config = load_config(configpath=args.configpath)
-            training_args = Seq2SeqTrainingArguments(**config["training_args"])
+        training_args = Seq2SeqTrainingArguments(
+            output_dir=args.output_dir,
+            overwrite_output_dir=args.overwrite_output_dir,
 
-        else:
-            training_args = Seq2SeqTrainingArguments(
-                output_dir=args.output_dir,
-                overwrite_output_dir=args.overwrite_output_dir,
+            num_train_epochs=args.num_train_epochs,
+            per_device_train_batch_size=args.per_device_train_batch_size,
+            per_device_eval_batch_size=args.per_device_eval_batch_size,
+            gradient_accumulation_steps=args.gradient_accumulation_steps,
+            
+            learning_rate=args.learning_rate,
+            weight_decay=args.weight_decay,
 
-                num_train_epochs=args.num_train_epochs,
-                per_device_train_batch_size=args.per_device_train_batch_size,
-                per_device_eval_batch_size=args.per_device_eval_batch_size,
-                gradient_accumulation_steps=args.gradient_accumulation_steps,
-                
-                learning_rate=args.learning_rate,
-                weight_decay=args.weight_decay,
+            evaluation_strategy=args.evaluation_strategy,
+            save_strategy=args.save_strategy,
+            
+            logging_strategy=args.logging_strategy,
+            logging_steps=args.logging_steps,
+            save_total_limit=args.save_total_limit,
+            
+            report_to=args.report_to,
+            run_name=args.run_name,
 
-                evaluation_strategy=args.evaluation_strategy,
-                save_strategy=args.save_strategy,
-                
-                logging_strategy=args.logging_strategy,
-                logging_steps=args.logging_steps,
-                save_total_limit=args.save_total_limit,
-                
-                report_to=args.report_to,
-                run_name=args.run_name,
-
-                # metric_for_best_model=args.metric_for_best_model,
-                # load_best_model_at_end=args.load_best_model_at_end,
-
-                # sortish_sampler=args.sortish_sampler,
-                predict_with_generate=args.predict_with_generate,
-
-                # generation_config=GenerationConfig(
-                #     min_new_tokens=args.min_new_tokens,
-                #     max_new_tokens=args.max_new_tokens,
-                #     temperature=args.temperature,
-                #     top_p=args.top_p,
-                #     top_k=args.top_k
-                # )
-            )
+            predict_with_generate=args.predict_with_generate
+        )
 
         return training_args
     
@@ -115,12 +103,31 @@ def load_training_arguments(args):
         print(f"Error while loading training arguments: {e}")
         raise e
 
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
+        super(ContrastiveLoss, self).__init__()
+        self.margin = margin
+        self.cosine_similarity = nn.CosineSimilarity(dim=1, eps=1e-6)
 
-def load_config(configpath):
-    if os.path.exists(configpath):
-        with open(configpath, "r") as f:
-            config = yaml.safe_load(f)
-        return config
-    
-    else:
-        return None
+    def forward(self, dialgue_embeddings, pos_summary_embeddings, neg_summary_embeddings):
+        pos_sim = self.cosine_similarity(dialgue_embeddings, pos_summary_embeddings)
+        neg_sim = self.cosine_similarity(dialgue_embeddings, neg_summary_embeddings)
+        loss = torch.mean(1-pos_sim) + torch.clamp(neg_sim-self.margin, min=0.0)
+
+        return loss
+
+class ContrastiveLearningTrainer(Seq2SeqTrainer):
+    def compute_loss(model, inputs, return_outputs=False):
+        output = model(**inputs)
+        lm_loss = output.loss
+
+        dialogue_embeddings = model.encoder(inputs["input_ids"]).last_hidden_state
+        pos_summary_embeddings = model.encoder(inputs["labels"]).last_hidden_state
+        neg_summary_embeddings = model.encoder(inputs["negative_labels"]).last_hidden_state
+
+        contrastive_loss = ContrastiveLoss(margin=1.0)(dialogue_embeddings, pos_summary_embeddings, neg_summary_embeddings)
+
+        # Combine losses
+        total_loss = lm_loss + contrastive_loss
+
+        return (total_loss, output) if return_outputs else total_loss
