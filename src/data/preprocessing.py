@@ -43,7 +43,7 @@ class DialogSumDataset:
             model = T5ForConditionalGeneration.from_pretrained(checkpoint)
 
             for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                queries = self.generate_queries(model, tokenizer, dialogue, summary, 6)
+                queries = self.generate_queries(model, tokenizer, summary, num_queries=6)
 
                 answerable_queries = []
                 for query in queries:
@@ -144,5 +144,5 @@ def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False,
         return tokenized_data
 
     except Exception as e:
-        print(f"Error while pre-processing data: {e}")
+        print(f"\033[31m\nError while pre-processing data: {e}\033[00m")
         raise e

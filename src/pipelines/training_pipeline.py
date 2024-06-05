@@ -153,6 +153,6 @@ def training_pipeline(args: argparse.Namespace):
         print("\033[92mComplete pushing model to hub!\033[00m")
 
     except Exception as e:
-        print(f"Error while training: {e}")
+        print(f"\033[31m\nError while training: {e}\033[00m")
         raise e
     

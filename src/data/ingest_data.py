@@ -21,5 +21,5 @@ def ingest_data(datapath: str) -> DatasetDict:
         return dataset
     
     except Exception as e:
-        print(f"Error while loading data: {e}")
+        print(f"\033[31m\nError while loading data: {e}\033[00m")
         raise e
