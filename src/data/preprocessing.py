@@ -9,10 +9,10 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False, create_qds=False, push_to_hf=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
-        self.create_qds = create_qds
+        self.generate_qds = generate_qds
         self.push_to_hf = push_to_hf
 
     def handle_data(self, data: DatasetDict) -> DatasetDict:
@@ -33,7 +33,7 @@ class DialogSumDataset:
         
     def preprocess_function(self, data: Dataset) -> Dataset:
         ## Create Query-Dialogue-Summary Instruction Dataset
-        if self.create_qds==True:
+        if self.generate_qds==True:
             scorer = BERTScorer(lang="en", rescale_with_baseline=True)
             
             inputs, targets = [], []
@@ -81,7 +81,7 @@ class DialogSumDataset:
                         targets.append(summary)
                     
         
-        if self.create_qds==False:
+        if self.generate_qds==False:
             prefix = "Summarize the following conversation:\n\n###"
             suffix = "\n\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
@@ -136,9 +136,9 @@ class DialogSumDataset:
         return score
 
 
-def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False) -> DatasetDict:
+def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> DatasetDict:
     try:
-        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss)
+        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, generate_qds, push_to_hf)
         tokenized_data = dataset_ds.handle_data(data)
 
         return tokenized_data
