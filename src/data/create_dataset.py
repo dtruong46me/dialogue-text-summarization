@@ -105,6 +105,11 @@ if __name__=="__main__":
     print('\n'.join(f' + {k}={v}' for k, v in vars(args).items()))
     print("=========================================")
 
+    login(token=args.huggingface_hub_token)
+    print("Successfully logged in to Huggingface Hub")
+
     qds_triplet = create_qds_triplet(args.datapath, args.split, args.start_index, args.end_index)
 
-    qds_triplet.push_to_hub(repo_id=f"dialogsum-{args.split}-{args.start_index}-{args.end_index}")
+    save_name = f"dialogsum-{args.split}-{args.start_index}-{args.end_index}"
+    qds_triplet.push_to_hub(save_name)
+    print(f"Saved to: {save_name}")
