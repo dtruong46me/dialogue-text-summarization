@@ -10,6 +10,7 @@ path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, path)
 
 def merge_dataset(datapaths) -> Dataset:
+    datapaths = datapaths.split(",")
     dataset = load_dataset(datapaths[0], split="train")
 
     for i in range(1, len(datapaths)):
