@@ -35,7 +35,7 @@ def training_pipeline(args: argparse.Namespace):
 
         model = load_model(args.checkpoint)
         tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
-        print(tokenizer)
+        print(type(tokenizer))
         
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
@@ -139,7 +139,7 @@ def training_pipeline(args: argparse.Namespace):
                                      compute_metrics=compute_metric)
 
         if args.use_contrastive_loss==False:
-            trainer = Seq2SeqTrainer(model=model.base_model,
+            trainer = Seq2SeqTrainer(model=base_model,
                                 args=training_args,
                                 train_dataset=data["train"],
                                 eval_dataset=data["validation"],

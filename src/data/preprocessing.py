@@ -44,7 +44,7 @@ class DialogSumDataset:
         # Use for binwang/InstructDS_datasets
         if self.tokenizing_strategy==2:
             inputs, targets = [], []
-            print("******************************")
+            print("\n******************************")
             for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
                 prefix = "Please summarize the following dialogue based on the following question and answer:"
                 inputs.append(prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(len(summary)) + " words." + "\n###Summary: ")
