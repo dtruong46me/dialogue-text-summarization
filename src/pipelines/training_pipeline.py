@@ -6,7 +6,8 @@ import nltk
 
 from nltk.tokenize import sent_tokenize
 from transformers import (
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
+    AutoTokenizer
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -32,7 +33,7 @@ def training_pipeline(args: argparse.Namespace):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         model = load_model(args.checkpoint)
-        tokenizer = model.tokenizer
+        tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
         print(tokenizer)
         
         if (args.lora == False):
