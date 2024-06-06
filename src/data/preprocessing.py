@@ -37,20 +37,25 @@ class DialogSumDataset:
             suffix = "\n\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
+            
+            max_source_length = 1024
+            max_target_length = 176
         
         # Use for binwang/InstructDS_datasets
         if self.tokenizing_strategy==2:
-            prefix = ""
-            targets = data["summary"]
+            for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
+                prefix = "Please summarize the following dialogue based on the following question and answer:"
+                inputs.append(prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(len(summary)) + " words." + "\n###Summary: ")
+                targets.append(summary)
+
+            max_source_length = 1224
+            max_target_length = 176
         
         if self.tokenizing_strategy==3:
             pass
 
         if self.tokenizing_strategy==4:
             pass
-
-        max_source_length = 1024
-        max_target_length = 176
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
