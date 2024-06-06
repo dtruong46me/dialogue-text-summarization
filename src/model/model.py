@@ -42,6 +42,7 @@ class BartSum(Model):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
+        print(self.tokenizer)
 
     def get_model(self):
         return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint)
@@ -51,6 +52,7 @@ class FlanT5Sum(Model):
     def __init__(self, checkpoint):
         super().__init__(checkpoint)
         self.tokenizer = AutoTokenizer.from_pretrained(self.checkpoint)
+        print(self.tokenizer)
 
     def get_model(self):
         return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint)
