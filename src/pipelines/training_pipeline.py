@@ -39,7 +39,7 @@ def training_pipeline(args: argparse.Namespace):
         
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
-            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint)
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint).to(device)
             # model.base_model = model.get_model()
             # model.base_model.to(device)
 
