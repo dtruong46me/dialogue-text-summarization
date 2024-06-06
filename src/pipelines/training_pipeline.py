@@ -7,7 +7,8 @@ import nltk
 from nltk.tokenize import sent_tokenize
 from transformers import (
     Seq2SeqTrainer,
-    AutoTokenizer
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -38,8 +39,9 @@ def training_pipeline(args: argparse.Namespace):
         
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
-            model.base_model = model.get_model()
-            model.base_model.to(device)
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint)
+            # model.base_model = model.get_model()
+            # model.base_model.to(device)
 
         else:
             from peft import LoraConfig, TaskType
@@ -130,7 +132,7 @@ def training_pipeline(args: argparse.Namespace):
         
         # Load trainer
         if args.use_contrastive_loss==True:
-            trainer = ContrastiveLearningTrainer(model=model.base_model,
+            trainer = ContrastiveLearningTrainer(model=base_model,
                                      train_dataset=data["train"],
                                      eval_dataset=data["validation"],
                                      tokenizer=tokenizer,
