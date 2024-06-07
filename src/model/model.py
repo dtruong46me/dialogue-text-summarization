@@ -17,7 +17,7 @@ class Model:
         self.base_model = None
 
     def get_model(self):
-        pass
+        return AutoModelForSeq2SeqLM.from_pretrained(self.checkpoint)
 
     def get_peft(self, lora_config):
         return get_peft_model(self.base_model, lora_config)
