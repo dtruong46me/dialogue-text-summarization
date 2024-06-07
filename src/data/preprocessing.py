@@ -50,12 +50,12 @@ class DialogSumDataset:
                 inputs.append(prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(len(summary)) + " words." + "\n###Summary: ")
                 targets.append(summary)
 
-            max_source_length = 1024
+            max_source_length = 1224
             max_target_length = 176
         
         if self.tokenizing_strategy==3:
-            prefix = "Summarize the following conversation:\n\n###"
-            suffix = "\n\nSummary: "
+            prefix = "Summarize the following conversation:\n###"
+            suffix = "\n###Summary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
             
