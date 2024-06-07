@@ -54,14 +54,21 @@ class DialogSumDataset:
             max_target_length = 176
         
         if self.tokenizing_strategy==3:
-            pass
+            prefix = "Summarize the following conversation:\n\n###"
+            suffix = "\n\nSummary: "
+            inputs = [prefix + input + suffix for input in data["dialogue"]]
+            targets = data["summary"]
+            
+            max_source_length = 1224
+            max_target_length = 176
 
         if self.tokenizing_strategy==4:
             pass
 
-
         print("Max source length: ", max_source_length)
         print("Max target length: ", max_target_length)
+        print("Max input:", max(len(input) for input in inputs))
+        print("Max target:", max(len(target) for target in targets))
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask

@@ -36,11 +36,11 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
 
     model_summaries = []
 
-    prefix = "Summarize the followring conversation:\n\n###"
-    suffix = "\n\nSummary: "
+    prefix = "Please summary the following dialogue:\n###"
+    suffix = "\n###Summary: "
 
     for idx, dialogue in enumerate(dialogues):
-        input = prefix + dialogue + suffix
+        input = prefix + dialogue + "\n###The generated summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + suffix
         
         print(idx, end="# ")
         output_text = model.generate_summary(input, generation_config, do_sample=False)
