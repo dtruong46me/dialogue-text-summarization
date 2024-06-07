@@ -43,7 +43,7 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
         input = prefix + dialogue + suffix
         
         print(idx, end="# ")
-        output_text = model.generate_summary(input, generation_config)
+        output_text = model.generate_summary(input, generation_config, do_sample=False)
 
         model_summaries.append(output_text)
 
