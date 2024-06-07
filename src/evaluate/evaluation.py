@@ -29,6 +29,7 @@ class RougeEvaluation:
 def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.base_model = model.get_model()
+    model.base_model.to(device)
 
     dialogues = data["dialogue"]
 
