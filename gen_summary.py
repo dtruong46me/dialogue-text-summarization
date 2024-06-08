@@ -1,19 +1,37 @@
 import torch
 from transformers import AutoTokenizer, GenerationConfig, TextStreamer, AutoModelForSeq2SeqLM
 
+import logging
+
+import warnings
+warnings.filterwarnings("ignore")
+
+# =  =  =  =  =  =  =  =  =  =  =  Logging Setup  =  =  =  =  =  =  =  =  =  =  =  =  = 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format  = "%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt = "%m/%d/%Y %H:%M:%S",
+    level   = logging.INFO,
+)
+# =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  = 
 
 def generate_summary(model, input_text, generation_config, tokenizer, st_container=None) -> str:
 
     try:
-        prefix = "Summarize the following conversation: \n\n###"
-        suffix = "\n\nSummary:"
+        prefix = "Summarize the following conversation: \n###\n"
+        suffix = "\n### Summary:"
+
+        input_ids = tokenizer.encode(prefix + input_text + "The generated summary should be around " + str(0.15*len(input_text)) + " words." + suffix, return_tensors="pt")
+        output_ids = model.generate(input_ids, do_sample=True, generation_config=generation_config)
+
+        if "bart" in model.name_or_path:
+            output_ids[0][1] = 2
         
-        input_ids = tokenizer.encode(prefix + input_text + suffix, return_tensors="pt")
-        
-        streamer = TextStreamer(tokenizer, skip_special_tokens=True)
-        text = model.generate(input_ids, streamer=streamer, do_sample=True, generation_config=generation_config)
-        
-        return text
+        # streamer = TextStreamer(tokenizer, skip_special_tokens=True)
+        # model.generate(input_ids, streamer=streamer, do_sample=True, decoder_start_token_id=2, generation_config=generation_config)
+        # logger.info("\nComplete generate summary!")
+        output_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        return output_text
     
     except Exception as e:
         print(f"Error while generating: {e}")
@@ -30,7 +48,7 @@ if __name__=="__main__":
         max_new_tokens=256,
         temperature=0.9,
         top_p=1.0,
-        top_k=50
+        top_k=50        
     )
 
     checkpoint = "dtruong46me/train-bart-base"
@@ -40,12 +58,6 @@ if __name__=="__main__":
 
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
     
-    generate_summary(model, input, generation_config, tokenizer)
-    print("\n==============\n")
-    generate_summary(model, input, generation_config, tokenizer)
-    print("\n==============\n")
-    generate_summary(model, input, generation_config, tokenizer)
-    print("\n==============\n")
     generate_summary(model, input, generation_config, tokenizer)
     print("\n==============\n")
 

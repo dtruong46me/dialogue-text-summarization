@@ -6,6 +6,17 @@ from datasets import Dataset
 import evaluate
 import torch
 
+import logging
+
+# =  =  =  =  =  =  =  =  =  =  =  Logging Setup  =  =  =  =  =  =  =  =  =  =  =  =  = 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format  = "%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    datefmt = "%m/%d/%Y %H:%M:%S",
+    level   = logging.INFO,
+)
+# =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  = 
+
 from transformers import AutoModelForSeq2SeqLM
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -38,23 +49,25 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
 
     model_summaries = []
 
-    # prefix = "Summarize the following dialogue:\n###"
-    # suffix = "\n###Summary: "
+    prefix = "Summarize the following dialogue:\n###\n"
+    suffix = "\n### Summary: "
 
-    print("\n******************************")
-    idx = 0
-    for question, answer, dialogue in zip(data["question"], data["answer"], data["dialogue"]):
-        prefix = "Please summarize the following dialogue based on the following question and answer:"
-        input = prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + "\n###Summary: "
+    # print("\n******************************")
+    # idx = 0
+    # for question, answer, dialogue in zip(data["question"], data["answer"], data["dialogue"]):
+    #     prefix = "Please summarize the following dialogue based on the following question and answer:"
+    #     input = prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + "\n###Summary: "
 
-    # for idx, dialogue in enumerate(dialogues):
-    #     input = prefix + dialogue + "\n###The generated summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + suffix
+    for idx, dialogue in enumerate(dialogues):
+        input = prefix + dialogue + "\n###The generated summary should be around " + str(int(0.15*len(dialogue.split()))) + " words." + suffix
         
         print(idx, end="# ")
         output_text = model.generate_summary(input, generation_config, do_sample=False)
 
         model_summaries.append(output_text)
         idx += 1
+
+    logger.info("Evaluating summaries...")
 
     rouge_evaluator = RougeEvaluation()
 

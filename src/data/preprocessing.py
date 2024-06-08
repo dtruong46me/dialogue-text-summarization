@@ -33,8 +33,8 @@ class DialogSumDataset:
     def preprocess_function(self, data: Dataset) -> Dataset:
         ###
         if self.tokenizing_strategy==1:
-            prefix = "Summarize the following conversation:\n\n###"
-            suffix = "\n\nSummary: "
+            prefix = "Summarize the following conversation:\n###\n"
+            suffix = "\n###\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
             
@@ -47,15 +47,15 @@ class DialogSumDataset:
             print("\n******************************")
             for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
                 prefix = "Please summarize the following dialogue based on the following question and answer:"
-                inputs.append(prefix + "\n###Question: " + question + "\n###Answer: " + answer + "\n###Dialogue: " + dialogue + "\n###The summary should be around " + str(len(summary)) + " words." + "\n###Summary: ")
+                inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
                 targets.append(summary)
 
             max_source_length = 1224
             max_target_length = 176
         
         if self.tokenizing_strategy==3:
-            prefix = "Summarize the following conversation:\n###"
-            suffix = "\n###Summary: "
+            prefix = "Summarize the following conversation:\n###\n"
+            suffix = "\n###\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
             
