@@ -30,8 +30,8 @@ class RougeEvaluation:
 
 def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.base_model = AutoModelForSeq2SeqLM.from_pretrained(model.checkpoint).to(device)
-
+    model.base_model = model.get_model()
+    
     dialogues = data["dialogue"]
 
     human_summaries = [summary for summary in data["summary"]]
