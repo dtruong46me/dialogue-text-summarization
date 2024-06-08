@@ -6,6 +6,8 @@ from datasets import Dataset
 import evaluate
 import torch
 
+from transformers import AutoModelForSeq2SeqLM
+
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
@@ -28,8 +30,7 @@ class RougeEvaluation:
 
 def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.base_model = model.get_model()
-    model.base_model.to(device)
+    model.base_model = AutoModelForSeq2SeqLM.from_pretrained(model.checkpoint).to(device)
 
     dialogues = data["dialogue"]
 
