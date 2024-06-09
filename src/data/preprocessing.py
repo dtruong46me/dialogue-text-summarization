@@ -41,9 +41,9 @@ class DialogSumDataset:
             max_source_length = 1024
             max_target_length = 176
 
-        if self.tokenizing_strategy==3:
+        if self.tokenizing_strategy==2:
             prefix = "Summarize the following conversation:\n###\n"
-            suffix = "\n###\nSummary: "
+            suffix = "\n### Summary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
             
@@ -51,7 +51,7 @@ class DialogSumDataset:
             max_target_length = 176
 
         # Use for binwang/InstructDS_datasets
-        if self.tokenizing_strategy==2:
+        if self.tokenizing_strategy==3:
             inputs, targets = [], []
             print("\n******************************")
             for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
@@ -59,7 +59,7 @@ class DialogSumDataset:
                 inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
                 targets.append(summary)
 
-            max_source_length = 1224
+            max_source_length = 1024
             max_target_length = 176
 
         if self.tokenizing_strategy==4:
@@ -70,7 +70,18 @@ class DialogSumDataset:
                 inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
                 targets.append(summary)
 
-            max_source_length = 1024
+            max_source_length = 1224
+            max_target_length = 176
+
+        if self.tokenizing_strategy==5:
+            inputs, targets = [], []
+            print("\n******************************")
+            for question, dialogue, summary in zip( data["answer"], data["dialogue"], data["summary"]):
+                prefix = "Please answer the following question from the dialogue:"
+                inputs.append(prefix + "\n### Question: " + question + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
+                targets.append(summary)
+
+            max_source_length = 1280
             max_target_length = 176
 
         print("Max source length: ", max_source_length)
