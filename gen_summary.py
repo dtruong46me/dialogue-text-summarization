@@ -51,7 +51,7 @@ if __name__=="__main__":
         top_k=50        
     )
 
-    checkpoint = "dtruong46me/train-bart-base"
+    checkpoint = "dtruong46me/bart-base-qds2"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
