@@ -20,12 +20,17 @@ st.write("---")
 with st.sidebar:
     checkpoint = st.selectbox("Model", options=[
         "Choose model",
-        "dtruong46me/train-bart-base"
+        "Bart Base",
+        "Flan-T5 Small",
+        "Flan-T5 Base",
+        "Bart-QDS",
+        "Flan-T5 QDS"
     ])
     st.button("Model detail", use_container_width=True)
     st.write("-----")
     st.write("**Generate Options:**")
     min_new_tokens = st.slider("Min new tokens", min_value=1, max_value=256, step=1, value=10)
+    max_new_tokens = st.slider("Max new tokens", min_value=10, max_value=256, step=1, value=64)
     temperature = st.slider("Temperature", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
     top_k = st.slider("Top_k", min_value=1, max_value=50, step=1, value=20)
     top_p = st.slider("Top_p", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
@@ -50,6 +55,16 @@ if checkpoint=="Choose model":
     model = None
 
 if checkpoint!="Choose model":
+    if checkpoint=="BART Base":
+        checkpoint = "dtruong46me/train-bart-base"
+    if checkpoint=="FLAN-T5 Small":
+        checkpoint = "dtruong46me/flant5-small"
+    if checkpoint=="FLAN-T5 Base":
+        checkpoint = "dtruong46me/flant5-base"
+    if checkpoint=="BART-QDS":
+        checkpoint = "dtruong46me/bart-base-qds1"
+    if checkpoint=="FLAN-T5 QDS":
+        checkpoint = "dtruong46me/bart-base-qds"
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
 
@@ -65,4 +80,4 @@ if st.button("Submit"):
     else:
         if input_text=="":
             st.error("Please enter a dialogue!")
-        st.write_stream(generate_summary(model, input_text, generation_config, tokenizer))
+        st.write(generate_summary(model, " ".join(input_text.split()), generation_config, tokenizer))
