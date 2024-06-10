@@ -24,7 +24,7 @@ def generate_summary(model, input_text, generation_config, tokenizer, st_contain
         input_ids = tokenizer.encode(prefix + input_text + "The generated summary should be around " + str(0.15*len(input_text)) + " words." + suffix, return_tensors="pt")
         output_ids = model.generate(input_ids, do_sample=True, generation_config=generation_config)
 
-        if "bart" in model.name_or_path:
+        if "bart" in model.name_or_path and model.name_or_path != "dtruong46me/bart-base-qds":
             output_ids[0][1] = 2
         
         # streamer = TextStreamer(tokenizer, skip_special_tokens=True)
