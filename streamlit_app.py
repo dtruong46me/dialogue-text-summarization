@@ -20,11 +20,11 @@ st.write("---")
 with st.sidebar:
     checkpoint = st.selectbox("Model", options=[
         "Choose model",
-        "Bart Base",
-        "Flan-T5 Small",
-        "Flan-T5 Base",
-        "Bart-QDS",
-        "Flan-T5 QDS"
+        "dtruong46me/train-bart-base",
+        "dtruong46me/flant5-small",
+        "dtruong46me/flant5-base",
+        "dtruong46me/bart-base-qds1",
+        "dtruong46me/bart-base-qds"
     ])
     st.button("Model detail", use_container_width=True)
     st.write("-----")
@@ -55,21 +55,6 @@ if checkpoint=="Choose model":
     model = None
 
 if checkpoint!="Choose model":
-    if checkpoint=="BART Base":
-        checkpoint = "dtruong46me/train-bart-base"
-
-    if checkpoint=="FLAN-T5 Small":
-        checkpoint = "dtruong46me/flant5-small"
-
-    if checkpoint=="FLAN-T5 Base":
-        checkpoint = "dtruong46me/flant5-base"
-
-    if checkpoint=="BART-QDS":
-        checkpoint = "dtruong46me/bart-base-qds1"
-
-    if checkpoint=="FLAN-T5 QDS":
-        checkpoint = "dtruong46me/bart-base-qds"
-
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
 
