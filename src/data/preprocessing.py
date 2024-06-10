@@ -9,12 +9,11 @@ from transformers import (
 )
 
 class DialogSumDataset:
-    def __init__(self, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> None:
+    def __init__(self, tokenizer, use_contrastive_loss=False, tokenizing_strategy=1) -> None:
         self.tokenizer = tokenizer
         self.use_contrastive_loss = use_contrastive_loss
-        self.generate_qds = generate_qds
-        self.push_to_hf = push_to_hf
-
+        self.tokenizing_strategy = tokenizing_strategy
+        
     def handle_data(self, data: DatasetDict) -> DatasetDict:
         try:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -28,67 +27,67 @@ class DialogSumDataset:
             return tokenized_dataset
 
         except Exception as e:
-            print(f"Error while tokenizing data: {e}")
+            print(f"\033[31m\nError while tokenizing data: {e}\033[00m")
             raise e
-        
+
     def preprocess_function(self, data: Dataset) -> Dataset:
-        ## Create Query-Dialogue-Summary Instruction Dataset
-        if self.generate_qds==True:
-            scorer = BERTScorer(lang="en", rescale_with_baseline=True)
-            
-            inputs, targets = [], []
-            
-            checkpoint = "google/flan-t5-large"
-            tokenizer = T5Tokenizer.from_pretrained(checkpoint)
-            model = T5ForConditionalGeneration.from_pretrained(checkpoint)
-
-            for dialogue, summary in zip(data["dialogue"], data["summary"]):
-                queries = self.generate_queries(model, tokenizer, dialogue, summary, num_queries=6)
-
-                answerable_queries = []
-                for query in queries:
-                    ## Text based filtering
-                    output = self.text_based_filtering(model, tokenizer, query, dialogue)
-                    if "yes" in output.lower():
-                        answerable_queries.append(query)
-
-                n = len(answerable_queries)
-
-                if n == 1:
-                    inputs.append(f"###Instruction: {answerable_queries[0]} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
-                    targets.append(summary)
-
-                if n > 1:
-                    filtered_queries = []
-                    scores = [[0.0]*n for _ in range(n)]
-
-                    for i in range(n):
-                        for j in range(n):
-                            if i > j:
-                                scores[i][j] = self.semantic_filtering(scorer, answerable_queries[i], answerable_queries[j])
-                    
-                    keep_indices = set(range(n))
-                    for i in range(n):
-                        for j in range(n):
-                            if scores[i][j] > 0.7 and i > j:
-                                keep_indices.discard(j)
-                    
-                    for i in sorted(keep_indices):
-                        filtered_queries.append(answerable_queries[i])
-
-                    for query in filtered_queries:
-                        inputs.append(f"###Instruction: {query} ###Input: {dialogue}. The generated summary should be around {len(summary)}")
-                        targets.append(summary)
-                    
-        
-        if self.generate_qds==False:
-            prefix = "Summarize the following conversation:\n\n###"
-            suffix = "\n\nSummary: "
+        ###
+        if self.tokenizing_strategy==1:
+            prefix = "Summarize the following conversation:\n###\n"
+            suffix = "\n###\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
+            
+            max_source_length = 1024
+            max_target_length = 176
 
-        max_source_length = 1024
-        max_target_length = 176
+        if self.tokenizing_strategy==2:
+            prefix = "Summarize the following conversation:\n###\n"
+            suffix = "\n### Summary: "
+            inputs = [prefix + input + suffix for input in data["dialogue"]]
+            targets = data["summary"]
+            
+            max_source_length = 1224
+            max_target_length = 176
+
+        # Use for binwang/InstructDS_datasets
+        if self.tokenizing_strategy==3:
+            inputs, targets = [], []
+            print("\n******************************")
+            for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
+                prefix = "Please summarize the following dialogue based on the following question and answer:"
+                inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
+                targets.append(summary)
+
+            max_source_length = 1024
+            max_target_length = 176
+
+        if self.tokenizing_strategy==4:
+            inputs, targets = [], []
+            print("\n******************************")
+            for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
+                prefix = "Please summarize the following dialogue based on the following question and answer:"
+                inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
+                targets.append(summary)
+
+            max_source_length = 1224
+            max_target_length = 176
+
+        if self.tokenizing_strategy==5:
+            inputs, targets = [], []
+            print("\n******************************")
+            for question, dialogue, summary in zip( data["answer"], data["dialogue"], data["summary"]):
+                prefix = "Please answer the following question from the dialogue:"
+                inputs.append(prefix + "\n### Question: " + question + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
+                targets.append(summary)
+
+            max_source_length = 1280
+            max_target_length = 176
+
+        print("Max source length: ", max_source_length)
+        print("Max target length: ", max_target_length)
+        print("Max input:", max(len(input) for input in inputs))
+        print("Max target:", max(len(target) for target in targets))
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
@@ -121,28 +120,28 @@ class DialogSumDataset:
         input_text = "Generate an answerable and specific question based on the following context:. ###\nContext: " + summary
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
         outputs = model.generate(input_ids, max_length=64, num_return_sequences=num_queries, do_sample=True)
-        queries = [tokenizer.decode(outputs, skip_special_tokens=True) for output in outputs]
+        queries = [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
         return queries
     
     def text_based_filtering(self, model, tokenizer, query, summary):
         input_text = "Is the question fully answerable from the context without any guessing, yes or no?###\nQuestion: " + query + "###\nContext: " + summary + "###Answer: "
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-        output_text = model.generate(input_ids, num_return_sequences=1)
-        output = tokenizer.decode(output_text, skip_special_tokens=True)
-        return output
+        output_ids = model.generate(input_ids, num_return_sequences=1)
+        output_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+        return output_text
     
     def semantic_filtering(self, scorer, query1, query2):
         score = scorer.score([query1], [query2])[0]
         return score
 
 
-def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, generate_qds=False, push_to_hf=False) -> DatasetDict:
+def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False, tokenizing_strategy=False) -> DatasetDict:
     try:
-        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, generate_qds, push_to_hf)
+        dataset_ds = DialogSumDataset(tokenizer, use_contrastive_loss, tokenizing_strategy)
         tokenized_data = dataset_ds.handle_data(data)
 
         return tokenized_data
 
     except Exception as e:
-        print(f"Error while pre-processing data: {e}")
+        print(f"\033[31m\nError while pre-processing data: {e}\033[00m")
         raise e

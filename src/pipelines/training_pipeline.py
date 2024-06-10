@@ -6,7 +6,9 @@ import nltk
 
 from nltk.tokenize import sent_tokenize
 from transformers import (
-    Seq2SeqTrainer
+    Seq2SeqTrainer,
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM
 )
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -32,12 +34,14 @@ def training_pipeline(args: argparse.Namespace):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         model = load_model(args.checkpoint)
-        tokenizer = model.tokenizer
+        tokenizer = AutoTokenizer.from_pretrained(args.checkpoint)
+        print(type(tokenizer))
         
         if (args.lora == False):
             print("lora=Fasle, quantize=False")
-            model.base_model = model.get_model()
-            model.base_model.to(device)
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint).to(device)
+            # model.base_model = model.get_model()
+            # model.base_model.to(device)
 
         else:
             from peft import LoraConfig, TaskType
@@ -79,7 +83,7 @@ def training_pipeline(args: argparse.Namespace):
         print("\033[92mComplete loading dataset!\033[00m")
 
         # Pre-processing data
-        data = preprocessing_data(data, tokenizer, use_contrastive_loss=args.use_contrastive_loss, generate_qds=args.generate_qds, push_to_hf=args.push_to_hf)
+        data = preprocessing_data(data, tokenizer, use_contrastive_loss=args.use_contrastive_loss, tokenizing_strategy=args.tokenizing_strategy)
         print("\033[92mComplete pre-processing dataset!\033[00m")
 
         # Load training arguments
@@ -128,14 +132,14 @@ def training_pipeline(args: argparse.Namespace):
         
         # Load trainer
         if args.use_contrastive_loss==True:
-            trainer = ContrastiveLearningTrainer(model=model.base_model,
+            trainer = ContrastiveLearningTrainer(model=base_model,
                                      train_dataset=data["train"],
                                      eval_dataset=data["validation"],
                                      tokenizer=tokenizer,
                                      compute_metrics=compute_metric)
 
         if args.use_contrastive_loss==False:
-            trainer = Seq2SeqTrainer(model=model.base_model,
+            trainer = Seq2SeqTrainer(model=base_model,
                                 args=training_args,
                                 train_dataset=data["train"],
                                 eval_dataset=data["validation"],
@@ -153,6 +157,6 @@ def training_pipeline(args: argparse.Namespace):
         print("\033[92mComplete pushing model to hub!\033[00m")
 
     except Exception as e:
-        print(f"Error while training: {e}")
+        print(f"\033[31m\nError while training: {e}\033[00m")
         raise e
     
