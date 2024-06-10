@@ -57,14 +57,19 @@ if checkpoint=="Choose model":
 if checkpoint!="Choose model":
     if checkpoint=="BART Base":
         checkpoint = "dtruong46me/train-bart-base"
+
     if checkpoint=="FLAN-T5 Small":
         checkpoint = "dtruong46me/flant5-small"
+
     if checkpoint=="FLAN-T5 Base":
         checkpoint = "dtruong46me/flant5-base"
+
     if checkpoint=="BART-QDS":
         checkpoint = "dtruong46me/bart-base-qds1"
+
     if checkpoint=="FLAN-T5 QDS":
         checkpoint = "dtruong46me/bart-base-qds"
+
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
 
