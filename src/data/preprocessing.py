@@ -32,26 +32,22 @@ class DialogSumDataset:
 
     def preprocess_function(self, data: Dataset) -> Dataset:
         ###
-        if self.tokenizing_strategy==1:
+        if self.tokenizing_strategy<=2:
             prefix = "Summarize the following conversation:\n###\n"
             suffix = "\n###\nSummary: "
             inputs = [prefix + input + suffix for input in data["dialogue"]]
             targets = data["summary"]
             
-            max_source_length = 1024
-            max_target_length = 176
+            if self.tokenizing_strategy==1:
+                max_source_length = 1024
+                max_target_length = 176
 
-        if self.tokenizing_strategy==2:
-            prefix = "Summarize the following conversation:\n###\n"
-            suffix = "\n### Summary: "
-            inputs = [prefix + input + suffix for input in data["dialogue"]]
-            targets = data["summary"]
-            
-            max_source_length = 1224
-            max_target_length = 176
+            if self.tokenizing_strategy==2:
+                max_source_length = 1224
+                max_target_length = 176
 
         # Use for binwang/InstructDS_datasets
-        if self.tokenizing_strategy==3:
+        if self.tokenizing_strategy==3 or self.tokenizing_strategy==4:
             inputs, targets = [], []
             print("\n******************************")
             for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
@@ -59,19 +55,13 @@ class DialogSumDataset:
                 inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
                 targets.append(summary)
 
-            max_source_length = 1024
-            max_target_length = 176
+            if self.tokenizing_strategy==3:
+                max_source_length = 1024
+                max_target_length = 176
 
-        if self.tokenizing_strategy==4:
-            inputs, targets = [], []
-            print("\n******************************")
-            for question, answer, dialogue, summary in zip(data["question"], data["answer"], data["dialogue"], data["summary"]):
-                prefix = "Please summarize the following dialogue based on the following question and answer:"
-                inputs.append(prefix + "\n### Question: " + question + "\n### Answer: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(len(summary)) + " words." + "\n### Summary: ")
-                targets.append(summary)
-
-            max_source_length = 1224
-            max_target_length = 176
+            if self.tokenizing_strategy==4:
+                max_source_length = 1224
+                max_target_length = 176
 
         if self.tokenizing_strategy==5:
             inputs, targets = [], []
@@ -84,10 +74,8 @@ class DialogSumDataset:
             max_source_length = 1280
             max_target_length = 176
 
-        print("Max source length: ", max_source_length)
-        print("Max target length: ", max_target_length)
-        print("Max input:", max(len(input) for input in inputs))
-        print("Max target:", max(len(target) for target in targets))
+        print("- Max source length: ", max_source_length)
+        print("- Max target length: ", max_target_length)
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
@@ -97,7 +85,7 @@ class DialogSumDataset:
         if self.use_contrastive_loss==True:
             negative_summaries = self.generate_negative_examples(data["summary"])
             data["negative_labels"] = self.tokenizer(negative_summaries, max_length=max_target_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
-            print("\033[92mComplete generate negative examples!\033[00m")
+            print("Complete generate negative examples!")
 
         label_ignore_ids = []
         for label in data["labels"]:
@@ -108,6 +96,7 @@ class DialogSumDataset:
 
         return data
     
+    ## Create Negetive Example for Contrastive Learning
     def generate_negative_examples(self, summaries):
         negative_summaries = []
         for summary in summaries:
@@ -116,6 +105,7 @@ class DialogSumDataset:
             negative_summaries.append(" ".join(words))
         return negative_summaries
 
+    ## Create Instruction Dataset
     def generate_queries(self, model, tokenizer, summary, num_queries):
         input_text = "Generate an answerable and specific question based on the following context:. ###\nContext: " + summary
         input_ids = tokenizer(input_text, return_tensors="pt").input_ids
@@ -143,5 +133,5 @@ def preprocessing_data(data: DatasetDict, tokenizer, use_contrastive_loss=False,
         return tokenized_data
 
     except Exception as e:
-        print(f"\033[31m\nError while pre-processing data: {e}\033[00m")
+        print(f"\nError while pre-processing data: {e}")
         raise e

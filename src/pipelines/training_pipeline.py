@@ -47,14 +47,6 @@ def training_pipeline(args: argparse.Namespace):
             from peft import LoraConfig, TaskType
             from transformers import BitsAndBytesConfig
             import torch
-
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16
-            )
-
             # Define LoRA Config 
             lora_config = LoraConfig(
                 r=args.lora_rank, 
@@ -67,6 +59,13 @@ def training_pipeline(args: argparse.Namespace):
 
             if (args.quantize == True):
                 print("Quantize=True, lora=True")
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.bfloat16
+                )
+
                 model.base_model = model.prepare_quantize(bnb_config)
 
             if (args.quantize==False):
@@ -75,20 +74,21 @@ def training_pipeline(args: argparse.Namespace):
                 model.base_model.to(device)
 
             # add LoRA adaptor
+            print("Base model:", model.base_model)
             model.base_model = model.get_peft(lora_config)
             model.base_model.print_trainable_parameters()
 
         # Load data from datapath
         data = ingest_data(args.datapath)
-        print("\033[92mComplete loading dataset!\033[00m")
+        print("\033[92m[+] Complete loading dataset!\033[00m")
 
         # Pre-processing data
         data = preprocessing_data(data, tokenizer, use_contrastive_loss=args.use_contrastive_loss, tokenizing_strategy=args.tokenizing_strategy)
-        print("\033[92mComplete pre-processing dataset!\033[00m")
+        print("\033[92m[+] Complete pre-processing dataset!\033[00m")
 
         # Load training arguments
         training_args = load_training_arguments(args)
-        print("\033[92mComplete loading training arguments!\033[00m")
+        print("\033[92m[+] Complete loading training arguments!\033[00m")
 
         # Load metric
         metric = evaluate.load("rouge")
@@ -146,15 +146,15 @@ def training_pipeline(args: argparse.Namespace):
                                 tokenizer=tokenizer,
                                 compute_metrics=compute_metric)
         
-        print("\033[92mComplete loading trainer!\033[00m")
+        print("\033[92m[+] Complete loading trainer!\033[00m")
 
         # Train model
         trainer.train()
-        print("\033[92mComplete training!\033[00m")
+        print("\033[92m[+] Complete training!\033[00m")
 
         # Push to Huggingface Hub
         trainer.push_to_hub()
-        print("\033[92mComplete pushing model to hub!\033[00m")
+        print("\033[92m [+] Complete pushing model to hub!\033[00m")
 
     except Exception as e:
         print(f"\033[31m\nError while training: {e}\033[00m")
