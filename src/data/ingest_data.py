@@ -68,7 +68,6 @@ def ingest_data(datapath: str) -> DatasetDict:
     # Validation data
     all_validation_data = []
     origin_validation_dialogsum = load_dataset(datapath1, "DialogSum", split="validation")
-    qds_validation_dialogsum = load_dataset(datapath2, "DialogSum_QDS", split="validation")
 
     new_data1 = []
     for sample in origin_validation_dialogsum:
@@ -81,18 +80,6 @@ def ingest_data(datapath: str) -> DatasetDict:
     
     origin_validation_dialogsum = new_data1
     all_validation_data.extend(origin_validation_dialogsum)
-
-    new_data2 = []
-    for sample in qds_validation_dialogsum:
-        new_sample = {
-            "instruction": "Please answer the following question.",
-            "input": sample["dialogue"],
-            "output": sample["summary"]
-        }
-        new_data2.append(new_sample)
-    qds_validation_dialogsum = new_data2
-
-    all_validation_data.extend(qds_validation_dialogsum)
 
     all_validation_data_dict = {
         "instruction": [item["instruction"] for item in all_validation_data],
