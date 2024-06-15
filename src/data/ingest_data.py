@@ -50,7 +50,7 @@ def ingest_data(datapath: str) -> DatasetDict:
 
     subset_train_data = random.sample(all_train_data, QDS_LIMIT)
     with_len_train_data_dict = {
-        "instruction": [item["instruction"] + f" The output should be {len(item["output"].split())} words long." for item in subset_train_data],
+        "instruction": [item["instruction"] + f" The output should be {len(item['output'].split())} words long." for item in subset_train_data],
         "input": [item["input"] for item in subset_train_data],
         "output": [item["output"] for item in subset_train_data]
     }
