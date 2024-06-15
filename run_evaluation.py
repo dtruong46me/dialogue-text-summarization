@@ -58,7 +58,7 @@ def main():
         top_k=args.top_k
     )
 
-    data = load_dataset(datapath, split="test")
+    data = load_dataset("binwang/InstructDS_datasets", "DialogSum", split="test")
 
     model = load_model(checkpoint)
     print(f"Loaded model from: {checkpoint}")

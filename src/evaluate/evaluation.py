@@ -43,7 +43,7 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.base_model = model.get_model()
 
-    # dialogues = data["dialogue"]
+    dialogues = data["dialogue"]
 
     human_summaries = [summary for summary in data["summary"]]
 
@@ -53,13 +53,13 @@ def evaluation_rouge(model: Model, data: Dataset, generation_config) -> dict:
     suffix = "\n### Summary: "
 
     # print("\n******************************")
-    idx = 0
-    for answer, dialogue in zip(data["answer"], data["dialogue"]):
-        prefix = "Please summarize the following dialogue focused on the context query:"
-        input = prefix + "\n### Queryr: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + "\n### Summary: "
+    # idx = 0
+    # for answer, dialogue in zip(data["answer"], data["dialogue"]):
+    #     prefix = "Please summarize the following dialogue focused on the context query:"
+    #     input = prefix + "\n### Queryr: " + answer + "\n### Dialogue: " + dialogue + "\n### The summary should be around " + str(int(0.2*len(dialogue.split()))) + " words." + "\n### Summary: "
 
-    # for idx, dialogue in enumerate(dialogues):
-    #     input = prefix + dialogue + "\n###The generated summary should be around " + str(int(0.15*len(dialogue.split()))) + " words." + suffix
+    for idx, dialogue in enumerate(dialogues):
+        input = prefix + dialogue + suffix
         
         print(idx, end="# ")
         output_text = model.generate_summary(input, generation_config, do_sample=False)
