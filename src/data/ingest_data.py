@@ -68,7 +68,7 @@ def ingest_data(datapath: str) -> DatasetDict:
     # Validation data
     all_validation_data = []
     origin_validation_dialogsum = load_dataset(datapath1, "DialogSum", split="validation")
-    qds_validation_dialogsum = load_dataset(datapath2, "DialogSumQDS", split="validation")
+    qds_validation_dialogsum = load_dataset(datapath2, "DialogSum_QDS", split="validation")
 
     new_data1 = []
     for sample in origin_validation_dialogsum:
