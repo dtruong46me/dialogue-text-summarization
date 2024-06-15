@@ -50,11 +50,8 @@ class DialogSumDataset:
             inputs = ["### Instruction: " + instruction + "\n### Input: " + input + "\n### Response: " for instruction, input in zip(data["instruction"], data["input"])]
             targets = data["output"]
 
-            max_source_length = 1224
+            max_source_length = 1024
             max_target_length = 176
-
-        print("- Max source length: ", max_source_length)
-        print("- Max target length: ", max_target_length)
 
         data["input_ids"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").input_ids
         # data["attention_mask"] = self.tokenizer(inputs, max_length=max_source_length, padding="max_length", truncation=True, return_tensors="pt").attention_mask
