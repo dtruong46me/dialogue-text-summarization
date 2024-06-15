@@ -17,7 +17,7 @@ def ingest_data(datapath: str) -> DatasetDict:
 
     all_train_data = []
     origin_train_dialogsum = load_dataset(datapath1, "DialogSum", split="train")
-    qds_dialogsum = load_dataset(datapath2, "DialogSumQDS", split="train")
+    qds_dialogsum = load_dataset(datapath2, "DialogSum_QDS", split="train")
 
     new_data1 = []
     for sample in origin_train_dialogsum:
