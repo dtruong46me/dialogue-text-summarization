@@ -56,7 +56,7 @@ if checkpoint=="Choose model":
 
 if checkpoint!="Choose model":
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to(device)
+    model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint)
 
 
 
