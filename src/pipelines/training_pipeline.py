@@ -11,7 +11,7 @@ from transformers import (
     AutoModelForSeq2SeqLM
 )
 
-from peft import get_peft_model
+from peft import get_peft_model, prepare_model_for_kbit_training
 
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
@@ -68,7 +68,11 @@ def training_pipeline(args: argparse.Namespace):
                     bnb_4bit_compute_dtype=torch.bfloat16
                 )
 
-                model.base_model = model.prepare_quantize(bnb_config)
+                base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint,
+                                                                   quantization_config=bnb_config,
+                                                                   device_map={"":0},
+                                                                   trust_remote_code=True)
+                base_model = prepare_model_for_kbit_training(base_model)
 
             if (args.quantize==False):
                 print("Quantize=False, lora=True")
@@ -79,7 +83,6 @@ def training_pipeline(args: argparse.Namespace):
             base_model = get_peft_model(base_model, lora_config)
             base_model.print_trainable_parameters()
 
-            base_model.gradient_checkpointing_enable()
 
         # Load data from datapath
         data = ingest_data(args.datapath)

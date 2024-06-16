@@ -6,3 +6,4 @@ rouge1,rouge2,rougeL,rougeLsum,gen_len,checkpoint
 0.5335,0.2672,0.5084,0,0,human-annotated-summary
 0.4728,0.2118,0.4483,0,0,bart-large-in-paper
 0.5165,0.2981,0.4336,0.4337,23.187,dtruong46me/bart-base-qds
+0.4061788843274445,0.1588224274185049,0.3175643149646888,0.3207910509892517,26.058,dtruong46me/flan-t5-s
