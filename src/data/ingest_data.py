@@ -39,6 +39,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         }
         new_data2.append(new_sample)
     qds_dialogsum = new_data2
+    qds_dialogsum = random.sample(qds_dialogsum, QDS_LIMIT)
     all_train_data.extend(qds_dialogsum)
 
 
@@ -48,7 +49,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": [item["output"] for item in all_train_data]
     }
 
-    subset_train_data = random.sample(all_train_data, QDS_LIMIT)
+    subset_train_data = all_train_data
     with_len_train_data_dict = {
         "instruction": [item["instruction"] + f" The output should be {len(item['output'].split())} words long." for item in subset_train_data],
         "input": [item["input"] for item in subset_train_data],
@@ -64,6 +65,8 @@ def ingest_data(datapath: str) -> DatasetDict:
     raw_train_data = Dataset.from_dict(all_train_data_dict)
     train_data = raw_train_data.shuffle()
 
+    for sample in train_data:
+        print(sample)
 
     # Validation data
     all_validation_data = []
