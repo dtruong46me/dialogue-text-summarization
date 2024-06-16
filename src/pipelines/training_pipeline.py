@@ -11,6 +11,8 @@ from transformers import (
     AutoModelForSeq2SeqLM
 )
 
+from peft import get_peft_model
+
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, path)
 
@@ -70,13 +72,12 @@ def training_pipeline(args: argparse.Namespace):
 
             if (args.quantize==False):
                 print("Quantize=False, lora=True")
-                model.base_model = model.get_model()
-                model.base_model.to(device)
+                base_model = AutoModelForSeq2SeqLM.from_pretrained(args.checkpoint).to(device)
 
             # add LoRA adaptor
             print("Base model:", model.base_model)
-            model.base_model = model.get_peft(lora_config)
-            model.base_model.print_trainable_parameters()
+            base_model = get_peft_model(base_model, lora_config)
+            base_model.print_trainable_parameters()
 
         # Load data from datapath
         data = ingest_data(args.datapath)
