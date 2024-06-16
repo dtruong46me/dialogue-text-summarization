@@ -53,7 +53,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": [item["output"] for item in all_train_data]
     }
 
-    print("Len of naive_all_train_data_dict: ", len(naive_all_train_data_dict))
+    print("Len of naive_all_train_data_dict: ", len(naive_all_train_data_dict["instruction"]))
 
     subset_train_data = all_train_data
     with_len_train_data_dict = {
@@ -62,7 +62,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": [item["output"] for item in subset_train_data]
     }
 
-    print("Len of with_len_train_data_dict: ", len(with_len_train_data_dict))
+    print("Len of with_len_train_data_dict: ", len(with_len_train_data_dict["instruction"]))
 
     all_train_data_dict = {
         "instruction": naive_all_train_data_dict["instruction"] + with_len_train_data_dict["instruction"],
@@ -70,7 +70,7 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": naive_all_train_data_dict["output"] + with_len_train_data_dict["output"]
     }
 
-    print("Len of all_train_data_dict: ", len(all_train_data_dict))
+    print("Len of all_train_data_dict: ", len(all_train_data_dict["instruction"]))
 
     raw_train_data = Dataset.from_dict(all_train_data_dict)
     train_data = raw_train_data.shuffle()
