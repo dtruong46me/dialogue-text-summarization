@@ -65,8 +65,10 @@ def ingest_data(datapath: str) -> DatasetDict:
     raw_train_data = Dataset.from_dict(all_train_data_dict)
     train_data = raw_train_data.shuffle()
 
-    for sample in train_data:
+    for sample in train_data[:10]:
         print(sample)
+
+    print("===================", len(train_data), "===================")
 
     # Validation data
     all_validation_data = []
