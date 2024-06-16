@@ -79,6 +79,8 @@ def training_pipeline(args: argparse.Namespace):
             base_model = get_peft_model(base_model, lora_config)
             base_model.print_trainable_parameters()
 
+            base_model.gradient_checkpointing_enable()
+
         # Load data from datapath
         data = ingest_data(args.datapath)
         print("\033[92m[+] Complete loading dataset!\033[00m")
