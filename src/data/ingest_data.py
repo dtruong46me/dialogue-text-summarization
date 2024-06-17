@@ -29,6 +29,9 @@ def ingest_data(datapath: str) -> DatasetDict:
         new_data1.append(new_sample)
     origin_train_dialogsum = new_data1
     all_train_data.extend(origin_train_dialogsum)
+
+    print("Len of origin_train_dialogsum: ", len(origin_train_dialogsum))
+    print("Len of all train data 1: ", len(all_train_data))
     
     new_data2 = []
     for sample in qds_dialogsum:
@@ -39,7 +42,9 @@ def ingest_data(datapath: str) -> DatasetDict:
         }
         new_data2.append(new_sample)
     qds_dialogsum = new_data2
+    qds_dialogsum = random.sample(qds_dialogsum, QDS_LIMIT)
     all_train_data.extend(qds_dialogsum)
+    print("Len of all train data 2: ", len(all_train_data))
 
 
     naive_all_train_data_dict = {
@@ -48,12 +53,16 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": [item["output"] for item in all_train_data]
     }
 
-    subset_train_data = random.sample(all_train_data, QDS_LIMIT)
+    print("Len of naive_all_train_data_dict: ", len(naive_all_train_data_dict["instruction"]))
+
+    subset_train_data = all_train_data
     with_len_train_data_dict = {
         "instruction": [item["instruction"] + f" The output should be {len(item['output'].split())} words long." for item in subset_train_data],
         "input": [item["input"] for item in subset_train_data],
         "output": [item["output"] for item in subset_train_data]
     }
+
+    print("Len of with_len_train_data_dict: ", len(with_len_train_data_dict["instruction"]))
 
     all_train_data_dict = {
         "instruction": naive_all_train_data_dict["instruction"] + with_len_train_data_dict["instruction"],
@@ -61,9 +70,17 @@ def ingest_data(datapath: str) -> DatasetDict:
         "output": naive_all_train_data_dict["output"] + with_len_train_data_dict["output"]
     }
 
+    print("Len of all_train_data_dict: ", len(all_train_data_dict["instruction"]))
+
     raw_train_data = Dataset.from_dict(all_train_data_dict)
     train_data = raw_train_data.shuffle()
 
+    print(type(train_data))
+    print(train_data["instruction"][:10])
+    print(train_data["input"][:10])
+    print(train_data["output"][:10])
+
+    print("===================", len(train_data), "===================")
 
     # Validation data
     all_validation_data = []
