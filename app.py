@@ -23,17 +23,17 @@ with st.sidebar:
         "dtruong46me/train-bart-base",
         "dtruong46me/flant5-small",
         "dtruong46me/flant5-base",
-        "dtruong46me/bart-base-qds1",
-        "dtruong46me/bart-base-qds"
+        "dtruong46me/flan-t5-s",
+        "ntluongg/bart-base-luong"
     ])
     st.button("Model detail", use_container_width=True)
     st.write("-----")
     st.write("**Generate Options:**")
-    min_new_tokens = st.slider("Min new tokens", min_value=1, max_value=256, step=1, value=10)
-    max_new_tokens = st.slider("Max new tokens", min_value=10, max_value=256, step=1, value=64)
-    temperature = st.slider("Temperature", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
-    top_k = st.slider("Top_k", min_value=1, max_value=50, step=1, value=20)
-    top_p = st.slider("Top_p", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
+    min_new_tokens = st.number_input("Min new tokens", min_value=1, max_value=64, value=10)
+    max_new_tokens = st.number_input("Max new tokens", min_value=64, max_value=128, value=64)
+    temperature = st.number_input("Temperature", min_value=0.0, max_value=1.0, value=0.9, step=0.05)
+    top_k = st.number_input("Top_k", min_value=1, max_value=50, step=1, value=20)
+    top_p = st.number_input("Top_p", min_value=0.01, max_value=1.00, step=0.01, value=1.0)
 
 
 height = 200
