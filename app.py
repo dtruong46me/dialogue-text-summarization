@@ -10,9 +10,6 @@ import sys, os
 path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, path)
 
-from gen_summary import generate_summary
-
-
 st.title("Dialogue Text Summarization")
 st.caption("Natural Language Processing Project 20232")
 
